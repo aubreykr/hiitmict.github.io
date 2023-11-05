@@ -1,0 +1,79 @@
+---
+title: "Study Progress"
+output: 
+  html_document:
+    fig_caption: yes
+    theme: cerulean
+    toc_depth: 3
+    toc_float: yes
+---
+
+### HIIT vs. MICT 
+This is designed to track study progress! Let me know any changes or things you would like to see implemented. 
+
+```{r setup, include=FALSE}
+# Load packages
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(redcapAPI)
+library(table1)
+library(lubridate)
+library(shiny)
+library(knitr)
+library(kableExtra)
+```
+
+
+```{r demog, message=FALSE, warning=FALSE, echo=FALSE}
+demog<-read.csv("/Users/aubreykr/Desktop/demog.csv")
+```
+
+### Study Progress
+```{r plots, message=FALSE, warning=FALSE, echo=FALSE}
+
+# Order levels of enrollment status
+demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Screen failed", "Lost to Follow-Up", "On-going Randomized", "Withdrawn", "Completed"))
+
+ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+
+  ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id)))) + theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+scale_y_continuous(limits=c(0,25), breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
+
+```
+
+### Where are participants this week?
+
+This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
+
+```{r asd, message=FALSE, warning=FALSE, echo=FALSE}
+
+demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Extension?", "Completed"))
+
+num_training<-demog %>% 
+  filter(enrollment_status == "On-going Randomized") %>% 
+  count()
+
+# Snapshot of participant progress
+demog %>% 
+  filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
+  ggplot(aes(x=current_week, fill=Group)) + geom_bar() +  scale_x_discrete(drop = FALSE) + theme_bw()+
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle(paste0("Snapshot of Participant Progress:", sep=" ", Sys.Date())) +   labs(fill = "Randomization Group") + theme(plot.title = element_text(hjust = 0.5))
+  
+
+# Snapshot with record_ids?
+demog %>% 
+  filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
+  ggplot(aes(x=current_week, fill=factor(record_id))) + geom_bar() +  scale_x_discrete(drop = FALSE) + theme_bw()+
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle(paste0("Snapshot of Participant Progress:", sep=" ", Sys.Date())) +   labs(fill = "Participant ID") + theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+
+
+
+
+
+
+
+
+
+
