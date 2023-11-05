@@ -68,7 +68,28 @@ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0(
 
 ```
 
+### Progress toward filling 4 strata!
+```{r progressstrata, message=FALSE, warning=FALSE, echo=FALSE}
 
+# Create sex + agebin variable
+demog$strata[demog$sex == "Female" & demog$agegroup == "18-35 yrs"]<-"F, 18-35"
+demog$strata[demog$sex == "Female" & demog$agegroup == "35-55 yrs"]<-"F, 35-55"
+demog$strata[demog$sex == "Male" & demog$agegroup == "18-35 yrs"]<-"M, 18-35"
+demog$strata[demog$sex == "Male" & demog$agegroup == "35-55 yrs"]<-"M, 35-55"
+
+cohort<-demog %>% 
+  filter(enrollment_status == "On-going Randomized" | enrollment_status == "Completed")
+
+# Progress Toward Filling 4 Strata (M, F, 18-35 yrs, 35-55 yrs)
+
+cohort %>% 
+  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
+  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+facet_wrap(~strata)+
+  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+  ggtitle(paste("On-going randomized or completed: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+
+
+```
 
 
 
