@@ -17,7 +17,6 @@ This is designed to track study progress! Let me know any changes or things you 
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggplot2)
-library(redcapAPI)
 library(table1)
 library(lubridate)
 library(shiny)
@@ -87,7 +86,6 @@ cohort %>%
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+facet_wrap(~strata)+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("On-going randomized or completed: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
-
 
 ```
 
