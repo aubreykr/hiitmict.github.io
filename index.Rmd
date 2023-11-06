@@ -29,6 +29,7 @@ library(kableExtra)
 demog<-read.csv("/Users/aubreykr/Desktop/demog.csv")
 ```
 
+
 ### Study Progress
 ```{r plots, message=FALSE, warning=FALSE, echo=FALSE}
 
@@ -48,10 +49,6 @@ This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 
 demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Extension?", "Completed"))
 
-num_training<-demog %>% 
-  filter(enrollment_status == "On-going Randomized") %>% 
-  count()
-
 # Snapshot of participant progress
 demog %>% 
   filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
@@ -66,6 +63,7 @@ demog %>%
 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle(paste0("Snapshot of Participant Progress:", sep=" ", Sys.Date())) +   labs(fill = "Participant ID") + theme(plot.title = element_text(hjust = 0.5))
 
 ```
+
 
 ### Progress toward filling 4 strata!
 ```{r progressstrata, message=FALSE, warning=FALSE, echo=FALSE}
@@ -89,11 +87,50 @@ cohort %>%
 
 ```
 
+### Participant Forecast
+Note: these are projected dates for start and finish, but do not represent precise dates.
+
+Ex: participants -- especially "New Participants" in purple -- listed in November may be in November and/or December. Dates will become more accurate after visits have occurred & participants officially begin training.
+
+This excludes participants who have screen failed, withdrawn, or been lost to follow-up, so this represents our forecasted participant numbers.
+
+
+```{r next, message=FALSE, warning=FALSE, echo=FALSE}
+
+# with record_id
+demog$record_id <- as.factor(demog$record_id)
+
+# list current date
+currentDate <- Sys.Date()
+
+
+# Convert the start_month column to a Date object
+demog$start_month <- as.Date(paste0("01 ", demog$start_month), format = "%d %b %Y")
+demog$end_month <- as.Date(paste0("01 ", demog$end_month), format = "%d %b %Y")
+
+num_eligible<-demog %>%
+  filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
+  count()
+
+
+# Projected start months
+demog %>%
+  filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
+  ggplot(aes(x = start_month, fill=Group, alpha=0.5)) + scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  geom_histogram(binwidth = 15) + ggtitle(paste0("Projected Start Months for n=", sep = "", num_eligible)) + scale_alpha(guide = 'none') + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = as.numeric(currentDate), linetype = "dashed", color = "black", size = 0.5) + xlab("Start Month")
+
+
+# Projected end months
+demog %>%
+  filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
+  ggplot(aes(x = end_month, fill=Group, alpha=0.5)) +scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  geom_bar() + ggtitle(paste0("Projected End Months for n=", sep = "", num_eligible)) +scale_alpha(guide = 'none') + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = as.numeric(currentDate), linetype = "dashed", color = "black", size = 0.5) + xlab("End Month")
+
+```
 
 
 
-
-
+*Thanks everybody for your hard work!*
 
 
 
