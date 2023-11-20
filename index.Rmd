@@ -54,7 +54,7 @@ demog %>%
   filter(enrollment_status != "Screen failed" & enrollment_status != "Withdrawn" & enrollment_status != "Lost to Follow-Up") %>% 
   ggplot(aes(x=current_week, fill=Group)) + geom_bar() +  scale_x_discrete(drop = FALSE) + theme_bw()+
 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle(paste0("Snapshot of Participant Progress:", sep=" ", Sys.Date())) +   labs(fill = "Randomization Group") + theme(plot.title = element_text(hjust = 0.5))
-  
+
 
 # Snapshot with record_ids?
 demog %>% 
@@ -127,8 +127,6 @@ demog %>%
   geom_bar() + ggtitle(paste0("Projected End Months for n=", sep = "", num_eligible)) +scale_alpha(guide = 'none') + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = as.numeric(currentDate), linetype = "dashed", color = "black", size = 0.5) + xlab("End Month")
 
 ```
-
-
 
 *Thanks everybody for your hard work!*
 
