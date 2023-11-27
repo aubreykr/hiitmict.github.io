@@ -10,7 +10,7 @@ output:
 ---
 
 ### HIIT vs. MICT 
-This is designed to track study progress! Let me know any changes or things you would like to see implemented. 
+This is designed to track study progress! Below is a weekly update.
 
 ```{r setup, include=FALSE}
 # Load packages
@@ -32,6 +32,9 @@ demog<-read.csv("/Users/aubreykr/Desktop/demog.csv")
 
 ### Study Progress
 ```{r plots, message=FALSE, warning=FALSE, echo=FALSE}
+
+# if missing, they have enrolled and update this
+demog$enrollment_status[is.na(demog$enrollment_status) == TRUE] <- "Enrolled (not screened yet)"
 
 # Order levels of enrollment status
 demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Screen failed", "Lost to Follow-Up", "On-going Randomized", "Withdrawn", "Completed"))
