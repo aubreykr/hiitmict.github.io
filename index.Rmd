@@ -47,24 +47,59 @@ demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$sta
 
 ```
 
-Number of participants currently training: `r num`
-
 ```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE}
 # Snapshot of participant progress
 demog %>% 
   filter(enrollment_status == "On-going Randomized" & current_week !="Not Training Yet") %>% 
   ggplot(aes(x=current_week, fill=factor(record_id))) + geom_bar() +  scale_x_discrete(drop = FALSE) + theme_bw()+
-theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle("Who is currently training?") +   labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5))+ scale_y_continuous(breaks = seq(0, 30, 2)) + geom_text(aes(label = record_id, y = ..count..), 
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle(paste0(num, sep=" ", "individuals are currently training")) +   labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5))+ scale_y_continuous(breaks = seq(0, 30, 2)) + geom_text(aes(label = record_id, y = ..count..), 
             stat = "count", 
             position = position_stack(vjust = 0.5), 
             color = "black", size = 3)
+```
 
-demog %>% 
-  filter(enrollment_status == "On-going Randomized" & current_week !="Not Training Yet") %>%  
-  dplyr::select(current_week, record_id, Group, sex) %>% 
+## How many workouts have they done?
+
+### On-going participants
+```{r workouts0, message=FALSE, warning=FALSE, echo=FALSE}
+# Filter for participants who are on-going and not controls
+training<-demog %>% 
+  filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet") %>% 
+  dplyr::select(record_id, current_week, quality_workouts_in_REDCap, total_workouts_in_REDCap, quality_fraction, training_status, sex, agegroup)
+
+training %>% 
   arrange(current_week) %>% 
-  kable("html") %>% 
+  kable() %>%
   kable_styling()
+```
+
+
+### Completed MICT participants
+```{r workouts,message=FALSE, warning=FALSE, echo=FALSE}
+
+# Filter for participants who are completed and MICT
+completed_mict<-demog %>% 
+  filter(enrollment_status == "Completed" & Group == "MICT") %>% 
+  dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, sex, agegroup)
+
+completed_mict %>% 
+    arrange(quality_workouts_in_REDCap) %>% 
+  kable() %>%
+  kable_styling()
+```
+
+### Completed HIIT participants
+```{r workouts2,message=FALSE, warning=FALSE, echo=FALSE}
+# Filter for participants who are completed and HIIT
+completed_hiit<-demog %>% 
+  filter(enrollment_status == "Completed" & Group == "HIIT") %>% 
+  dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, sex, agegroup)
+
+completed_hiit %>% 
+  arrange(quality_workouts_in_REDCap) %>% 
+  kable() %>%
+  kable_styling()
+
 ```
 
 ## Study Progress
@@ -72,9 +107,11 @@ demog %>%
 # Order levels of enrollment status
 demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Lost to Follow-Up", "Screen failed", "Withdrew before training","On-going Randomized", "Withdrew after training", "Completed"))
 
+
 ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+
   ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id)))) + theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+scale_y_continuous(limits=c(0,25), breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
 ```
+
 
 ## Progress toward filling 4 strata
 ```{r progressstrata, message=FALSE, warning=FALSE, echo=FALSE}
@@ -98,7 +135,5 @@ cohort %>%
 
 ```
 
+
 *Thanks everybody for your hard work!*
-
-
-
