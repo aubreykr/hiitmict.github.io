@@ -65,7 +65,7 @@ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0(
 # Filter for participants who are on-going and not controls
 training<-demog %>% 
   filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet") %>% 
-  dplyr::select(record_id, current_week, quality_workouts_in_REDCap, total_workouts_in_REDCap, quality_fraction, training_status, sex, agegroup)
+  dplyr::select(record_id, current_week, Group, quality_workouts_in_REDCap, total_workouts_in_REDCap, quality_fraction, training_status, sex, agegroup)
 
 training %>% 
   arrange(current_week) %>% 
