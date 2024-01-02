@@ -39,7 +39,12 @@ demog$enrollment_status[is.na(demog$enrollment_status) == TRUE] <- "Enrolled (no
 demog$current_week <- factor(demog$current_week, levels=c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15", "Week 16", "Week 17", "Week 18", "Beyond Week 18?"))
 
 # number of participants currently training
-num<-length(demog$record_id[demog$enrollment_status== "On-going Randomized" & demog$current_week !="Not Training Yet"])
+num<-length(demog$record_id[demog$enrollment_status== "On-going Randomized" & is.na(demog$current_week)==FALSE])
+
+# withdrawn participants: distinguish participants who started training vs. withdrew before study
+demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$start_month)==FALSE] <- "Withdrew after training"
+demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$start_month)==TRUE] <- "Withdrew before training"
+
 ```
 
 Number of participants currently training: `r num`
@@ -65,7 +70,7 @@ demog %>%
 ## Study Progress
 ```{r newppl, message=FALSE, warning=FALSE, echo=FALSE}
 # Order levels of enrollment status
-demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Screen failed", "Lost to Follow-Up", "On-going Randomized", "Withdrawn", "Completed"))
+demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Lost to Follow-Up", "Screen failed", "Withdrew before training","On-going Randomized", "Withdrew after training", "Completed"))
 
 ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+
   ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id)))) + theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+scale_y_continuous(limits=c(0,25), breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
