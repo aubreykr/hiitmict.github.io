@@ -99,14 +99,12 @@ completed_hiit %>%
   arrange(quality_workouts_in_REDCap) %>% 
   kable() %>%
   kable_styling()
-
 ```
 
 ## Study Progress
 ```{r newppl, message=FALSE, warning=FALSE, echo=FALSE}
 # Order levels of enrollment status
 demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Lost to Follow-Up", "Screen failed", "Withdrew before training","On-going Randomized", "Withdrew after training", "Completed"))
-
 
 ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+
   ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id)))) + theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+scale_y_continuous(limits=c(0,25), breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
@@ -137,3 +135,44 @@ cohort %>%
 
 
 *Thanks everybody for your hard work!*
+
+```{r bodyfat, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+
+# calculated variables
+demog<-demog %>% 
+  mutate(delta_VO2 = ep_vo2_max - bl_vo2_max,
+         delta_bodyfat = ep_percent_body_fat - bl_percent_body_fat,
+         delta_BMI = ep_bmi - bl_bmi)
+
+demog %>% 
+  filter(enrollment_status == "Completed") %>% 
+  group_by(Group) %>% 
+  summarize(mean = median(delta_VO2),
+            sd = sd(delta_VO2))
+
+demog %>% 
+  filter(enrollment_status == "Completed") %>% 
+  group_by(Group) %>% 
+  summarize(median = median(delta_bodyfat))
+
+# delta plots
+demog %>% 
+  filter(enrollment_status == "Completed") %>% 
+  ggplot(aes(x=Group, y=delta_VO2, color=sex, group=Group)) + geom_boxplot() + geom_point()  + geom_hline(yintercept = 0, linetype="dotted") + 
+  ggtitle("Delta VO2 max") + theme(plot.title = element_text(hjust = 0.5)) 
+
+demog %>% 
+  filter(enrollment_status == "Completed" & is.na(delta_bodyfat)==FALSE) %>% 
+  ggplot(aes(x=Group, y=delta_bodyfat, color=sex, group=Group)) + geom_boxplot() + geom_point()  + geom_hline(yintercept = 0, linetype="dotted") + 
+  ggtitle("Delta body fat") + theme(plot.title = element_text(hjust = 0.5)) 
+
+demog %>% 
+  filter(enrollment_status == "Completed" & is.na(delta_BMI)==FALSE) %>% 
+  ggplot(aes(x=Group, y=delta_BMI, color=sex, group=Group)) + geom_boxplot() + geom_point()  + geom_hline(yintercept = 0, linetype="dotted") + 
+  ggtitle("Delta BMI") + theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
+
+
