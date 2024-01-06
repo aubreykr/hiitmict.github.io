@@ -1,12 +1,18 @@
 ---
 title: "HIIT vs. MICT"
-output: 
+output:
   html_document:
     fig_caption: yes
     theme: cerulean
     toc: yes
     toc_depth: 3
     toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  word_document:
+    toc: yes
+    toc_depth: '3'
 ---
 This is designed to track study progress! Below is a weekly update.
 
@@ -136,40 +142,92 @@ cohort %>%
 
 *Thanks everybody for your hard work!*
 
-```{r bodyfat, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+```{r vo2checking, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+library(readxl)
+vo2<-read_xlsx("/Users/aubreykr/Desktop/VO2_prelim_analysis/Yair_condensed_VO2_1_6_24.xlsx")
 
-# calculated variables
-demog<-demog %>% 
-  mutate(delta_VO2 = ep_vo2_max - bl_vo2_max,
-         delta_bodyfat = ep_percent_body_fat - bl_percent_body_fat,
-         delta_BMI = ep_bmi - bl_bmi)
+# remove missing rows
+vo2<-vo2 %>% 
+  filter(is.na(record_id)==FALSE)
 
-demog %>% 
+# change to baseline, endpoint labels
+vo2<-vo2 %>% 
+  mutate(Timepoint = case_when(Timepoint == "V1" ~ "Baseline",
+                               Timepoint == "V2" ~ "Endpoint"))
+
+# rearrange timepoint to front of column
+vo2<-vo2 %>%
+  relocate(Timepoint, .after=record_id)
+
+# plot VO2 max at BL vs. EP
+#ggplot(aes(x=Timepoint, y=VO2_Peak_mLkg, color=factor(record_id), group=record_id), data=vo2) + geom_point() +
+ # geom_line(aes(group = record_id), linetype = "dashed") +
+ # labs(title = "VO2 Peak: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) + theme(plot.title=element_text(hjust=0.5))
+
+
+# calculate % change VO2 max
+percent_change_vo2 <- (vo2[vo2$Timepoint == "Endpoint",]$VO2_Peak_mLkg - vo2[vo2$Timepoint == "Baseline",]$VO2_Peak_mLkg) / vo2[vo2$Timepoint == "Baseline",]$VO2_Peak_mLkg * 100
+record_id<-unique(vo2$record_id)
+vo2_change<-data.frame(cbind(record_id, percent_change_vo2))
+vo2<-merge(vo2, vo2_change)
+
+
+# plot % change in VO2 max
+vo2 %>% 
+  filter(Timepoint=="Baseline") %>% 
+  ggplot(aes(x=group, y=percent_change_vo2)) + geom_boxplot() + geom_hline(yintercept=0, linetype="dotted") + geom_point() + 
+   stat_summary(
+    fun = median,
+    geom = "text",
+    vjust = -0.6,
+    size = 3.2,
+    aes(group = group, label = sprintf("%.2f", ..y..))
+  ) + ylab("Percent change in VO2 max") + xlab("Randomization Group") + ggtitle("Percent change in VO2 max after 12 Weeks") + theme(plot.title=element_text(hjust=0.5))
+
+
+# add adherence data and dxa data to vo2 dataset
+subset<-demog %>% 
   filter(enrollment_status == "Completed") %>% 
-  group_by(Group) %>% 
-  summarize(mean = median(delta_VO2),
-            sd = sd(delta_VO2))
+  dplyr::select(record_id, sex, agegroup, total_workouts_in_REDCap, quality_workouts_in_REDCap, percent_complete_of_36_wkts)
 
-demog %>% 
-  filter(enrollment_status == "Completed") %>% 
-  group_by(Group) %>% 
-  summarize(median = median(delta_bodyfat))
+vo2<-merge(vo2, subset, by="record_id")
 
-# delta plots
-demog %>% 
-  filter(enrollment_status == "Completed") %>% 
-  ggplot(aes(x=Group, y=delta_VO2, color=sex, group=Group)) + geom_boxplot() + geom_point()  + geom_hline(yintercept = 0, linetype="dotted") + 
-  ggtitle("Delta VO2 max") + theme(plot.title = element_text(hjust = 0.5)) 
 
-demog %>% 
-  filter(enrollment_status == "Completed" & is.na(delta_bodyfat)==FALSE) %>% 
-  ggplot(aes(x=Group, y=delta_bodyfat, color=sex, group=Group)) + geom_boxplot() + geom_point()  + geom_hline(yintercept = 0, linetype="dotted") + 
-  ggtitle("Delta body fat") + theme(plot.title = element_text(hjust = 0.5)) 
+# plot correlation between workout adherence and change in VO2
 
-demog %>% 
-  filter(enrollment_status == "Completed" & is.na(delta_BMI)==FALSE) %>% 
-  ggplot(aes(x=Group, y=delta_BMI, color=sex, group=Group)) + geom_boxplot() + geom_point()  + geom_hline(yintercept = 0, linetype="dotted") + 
-  ggtitle("Delta BMI") + theme(plot.title = element_text(hjust = 0.5)) 
+library(ggpubr)
+
+vo2 %>% 
+  filter(Timepoint == "Baseline" & group!="Con" & record_id!="4") %>% 
+  ggplot(aes(x=quality_workouts_in_REDCap, y=percent_change_vo2, color=group)) + geom_point() + 
+    geom_smooth(method = "lm", se = FALSE, size=0.5) +  # Add linear regression line without confidence interval
+  labs(title = "Number Successful Workouts vs. % Change in VO2 max",
+       x = "Number Successful Workouts",
+       y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)+
+  stat_cor(method = "pearson")
+
+vo2 %>% 
+  filter(Timepoint == "Baseline" & group!="Con") %>% 
+  ggplot(aes(x=total_workouts_in_REDCap, y=percent_change_vo2, color=group)) + geom_point() + 
+  labs(title = "Number Total Workouts vs. % Change in VO2 max",
+       x = "Number Total Workouts",
+       y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)
+
+test<-vo2 %>%
+  filter(Timepoint == "Baseline")
+
+#model<-lm(percent_change_vo2 ~ sex + agegroup + weight_kg + quality_workouts_in_REDCap + group, data = test)
+#summary(model)
+
+
+vo2 %>% 
+  filter(Timepoint == "Baseline" & group!="Con") %>% 
+  ggplot(aes(x=quality_workouts_in_REDCap, y=percent_change_vo2, color=group)) + geom_point() + 
+  labs(title = "Changes by Sex, Age",
+       x = "Number Successful Workouts",
+       y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8) + facet_wrap(~sex + agegroup)
+
+
 
 ```
 
