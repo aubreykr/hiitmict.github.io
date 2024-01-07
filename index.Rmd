@@ -142,7 +142,8 @@ cohort %>%
 
 *Thanks everybody for your hard work!*
 
-```{r vo2checking, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+## Workout adherence and VO2 max
+```{r vo2checking, message=FALSE, warning=FALSE, echo=FALSE}
 library(readxl)
 vo2<-read_xlsx("/Users/aubreykr/Desktop/VO2_prelim_analysis/Yair_condensed_VO2_1_6_24.xlsx")
 
@@ -157,25 +158,66 @@ vo2<-vo2 %>%
 
 # rearrange timepoint to front of column
 vo2<-vo2 %>%
-  relocate(Timepoint, .after=record_id)
+  relocate(Timepoint, .after=record_id) %>% 
+  arrange(record_id, Timepoint)
+
+# Calculated variables for VO2, VT1, VT2 
+
+# % change in VO2 max
+for (i in 1:nrow(vo2)) {
+  if( i %% 2 == 1) { vo2$Peak_VO2_change[i] = 0 }
+  if (i %% 2 == 0) {  vo2$Peak_VO2_change[i] = (vo2$VO2_Peak_mLkg[i] - vo2$VO2_Peak_mLkg[i-1]) /  vo2$VO2_Peak_mLkg[i-1] * 100}
+} 
+
+
+# VT1
+for (i in 1:nrow(vo2)) {
+  if( i %% 2 == 1) { vo2$VT1_change[i] = 0 }
+  if (i %% 2 == 0) { vo2$VT1_change[i] = vo2$VT1_vo2[i] - vo2$VT1_vo2[i-1]}
+} 
+
+# VT2
+for (i in 1:nrow(vo2)) {
+  if( i %% 2 == 1) { vo2$VT2_change[i] = 0 }
+  if (i %% 2 == 0) { vo2$VT2_change[i] = vo2$VT2_vo2[i] - vo2$VT2_vo2[i-1]}
+} 
+
+# HR 
+for (i in 1:nrow(vo2)) {
+  if( i %% 2 == 1) { vo2$Peak_HR_change[i] = 0 }
+  if (i %% 2 == 0) { vo2$Peak_HR_change[i] = vo2$Peak_HR[i] - vo2$Peak_HR[i-1]}
+} 
+
+# HR at VT1
+for (i in 1:nrow(vo2)) {
+  if( i %% 2 == 1) { vo2$VT1_HR_change[i] = 0 }
+  if (i %% 2 == 0) { vo2$VT1_HR_change[i] = vo2$VT1_HR[i] - vo2$VT1_HR[i-1]}
+} 
+
+# HR at VT2
+for (i in 1:nrow(vo2)) {
+  if( i %% 2 == 1) { vo2$VT2_HR_change[i] = 0 }
+  if (i %% 2 == 0) { vo2$VT2_HR_change[i] = vo2$VT2_HR[i] - vo2$VT2_HR[i-1]}
+} 
 
 # plot VO2 max at BL vs. EP
 #ggplot(aes(x=Timepoint, y=VO2_Peak_mLkg, color=factor(record_id), group=record_id), data=vo2) + geom_point() +
  # geom_line(aes(group = record_id), linetype = "dashed") +
  # labs(title = "VO2 Peak: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) + theme(plot.title=element_text(hjust=0.5))
 
-
-# calculate % change VO2 max
-percent_change_vo2 <- (vo2[vo2$Timepoint == "Endpoint",]$VO2_Peak_mLkg - vo2[vo2$Timepoint == "Baseline",]$VO2_Peak_mLkg) / vo2[vo2$Timepoint == "Baseline",]$VO2_Peak_mLkg * 100
+# length from first to last vo2 test
+length<-vo2[vo2$Timepoint == "Endpoint",]$date - vo2[vo2$Timepoint == "Baseline",]$date
 record_id<-unique(vo2$record_id)
-vo2_change<-data.frame(cbind(record_id, percent_change_vo2))
-vo2<-merge(vo2, vo2_change)
+dates<-data.frame(cbind(record_id, length))
+vo2<-merge(vo2, dates)
 
+# change to length in weeks not days
+vo2$length_weeks<-vo2$length / 7
 
 # plot % change in VO2 max
 vo2 %>% 
-  filter(Timepoint=="Baseline") %>% 
-  ggplot(aes(x=group, y=percent_change_vo2)) + geom_boxplot() + geom_hline(yintercept=0, linetype="dotted") + geom_point() + 
+  filter(Timepoint=="Endpoint") %>% 
+  ggplot(aes(x=group, y=Peak_VO2_change)) + geom_boxplot() + geom_hline(yintercept=0, linetype="dotted") + geom_point() + 
    stat_summary(
     fun = median,
     geom = "text",
@@ -184,7 +226,6 @@ vo2 %>%
     aes(group = group, label = sprintf("%.2f", ..y..))
   ) + ylab("Percent change in VO2 max") + xlab("Randomization Group") + ggtitle("Percent change in VO2 max after 12 Weeks") + theme(plot.title=element_text(hjust=0.5))
 
-
 # add adherence data and dxa data to vo2 dataset
 subset<-demog %>% 
   filter(enrollment_status == "Completed") %>% 
@@ -192,14 +233,13 @@ subset<-demog %>%
 
 vo2<-merge(vo2, subset, by="record_id")
 
-
 # plot correlation between workout adherence and change in VO2
 
 library(ggpubr)
 
 vo2 %>% 
-  filter(Timepoint == "Baseline" & group!="Con" & record_id!="4") %>% 
-  ggplot(aes(x=quality_workouts_in_REDCap, y=percent_change_vo2, color=group)) + geom_point() + 
+  filter(Timepoint=="Endpoint" & group!="Con" & record_id!="4") %>% 
+  ggplot(aes(x=quality_workouts_in_REDCap, y=Peak_VO2_change, color=group)) + geom_point() + 
     geom_smooth(method = "lm", se = FALSE, size=0.5) +  # Add linear regression line without confidence interval
   labs(title = "Number Successful Workouts vs. % Change in VO2 max",
        x = "Number Successful Workouts",
@@ -207,30 +247,136 @@ vo2 %>%
   stat_cor(method = "pearson")
 
 vo2 %>% 
-  filter(Timepoint == "Baseline" & group!="Con") %>% 
-  ggplot(aes(x=total_workouts_in_REDCap, y=percent_change_vo2, color=group)) + geom_point() + 
+  filter(Timepoint=="Endpoint" & group!="Con") %>% 
+  ggplot(aes(x=total_workouts_in_REDCap, y=Peak_VO2_change, color=group)) + geom_point() + 
   labs(title = "Number Total Workouts vs. % Change in VO2 max",
        x = "Number Total Workouts",
        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)
 
-test<-vo2 %>%
-  filter(Timepoint == "Baseline")
 
-#model<-lm(percent_change_vo2 ~ sex + agegroup + weight_kg + quality_workouts_in_REDCap + group, data = test)
+# look at intervention length
+
+vo2 %>% 
+  filter(Timepoint == "Endpoint" & group!="Con") %>% 
+  ggplot(aes(x=length_weeks, y=Peak_VO2_change, group=group, color=group)) + geom_point() +  geom_smooth(method = "lm", se = FALSE, size=0.5) + labs(title = "Number weeks between VO2 max visits vs. % Change in VO2 max",
+       x = "Number weeks between VO2 max visits",
+       y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)+
+   stat_cor(method = "pearson")
+
+vo2 %>% 
+  filter(Timepoint == "Endpoint" & group!="Con") %>% 
+  ggplot(aes(x=length_weeks, y=quality_workouts_in_REDCap, group=group, color=group)) + geom_point() +  geom_smooth(method = "lm", se = FALSE, size=0.5) + labs(title = "Number weeks between VO2 max visits vs. num quality workouts",
+       x = "Number weeks between VO2 max visits",
+       y = "Number quality workouts in redcap") + theme(plot.title=element_text(hjust=0.5)) +
+   stat_cor(method = "pearson")
+
+vo2<-vo2 %>% 
+  mutate(wkts_per_week = quality_workouts_in_REDCap / length_weeks)
+
+# average number of workouts per week
+vo2 %>% 
+  filter(Timepoint == "Endpoint" & group!="Con" & record_id!="4") %>% 
+  ggplot(aes(x=wkts_per_week, y=Peak_VO2_change, group=group, color=group)) + geom_point() +  geom_smooth(method = "lm", se = FALSE, size=0.5) + labs(title = "Average num workouts per week vs. VO2 change",
+       x = "Average num workouts per week",
+       y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) +
+   stat_cor(method = "pearson") + geom_hline(yintercept=0, linetype="dotted", size=0.8)
+
+
+#model<-lm(percent_change_vo2 ~ sex + agegroup + weight_kg + quality_workouts_in_REDCap + length_weeks + group, data = test)
 #summary(model)
 
 
 vo2 %>% 
-  filter(Timepoint == "Baseline" & group!="Con") %>% 
-  ggplot(aes(x=quality_workouts_in_REDCap, y=percent_change_vo2, color=group)) + geom_point() + 
+  filter(Timepoint == "Endpoint" & group!="Con") %>% 
+  ggplot(aes(x=quality_workouts_in_REDCap, y=Peak_VO2_change, color=group)) + geom_point() + 
   labs(title = "Changes by Sex, Age",
        x = "Number Successful Workouts",
        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8) + facet_wrap(~sex + agegroup)
 
 
+```
+
+```{r vt1, message=FALSE, warning=FALSE, echo=FALSE}
+
+ggplot(aes(x=Timepoint, y=VO2_Peak_mLkg), data=vo2) + geom_boxplot() + geom_point()+
+ labs(title = "VO2: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
+  method = "t.test", # You can also use "wilcox.test" for non-parametric test
+  label = "p.format",
+  paired = TRUE
+)
+
+ggplot(aes(x=Timepoint, y=VT1_vo2), data=vo2) + geom_boxplot() + geom_point()+
+ labs(title = "VT1: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
+  method = "t.test", # You can also use "wilcox.test" for non-parametric test
+  label = "p.format",
+  paired = TRUE
+)
+
+ggplot(aes(x=Timepoint, y=VT2_vo2), data=vo2) + geom_boxplot() + geom_point()+
+ labs(title = "VT2: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
+  method = "t.test", # You can also use "wilcox.test" for non-parametric test
+  label = "p.format",
+  paired = TRUE
+)
+
+
+ggplot(aes(x=Timepoint, y=Peak_HR), data=vo2) + geom_boxplot() + geom_point()+
+ labs(title = "VO2 HR: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
+  method = "t.test", # You can also use "wilcox.test" for non-parametric test
+  label = "p.format",
+  paired = TRUE
+)
+
+ggplot(aes(x=Timepoint, y=VT1_HR), data=vo2) + geom_boxplot() + geom_point()+
+ labs(title = "VT1 HR: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
+  method = "t.test", # You can also use "wilcox.test" for non-parametric test
+  label = "p.format",
+  paired = TRUE
+)
+
+ggplot(aes(x=Timepoint, y=VT2_HR), data=vo2) + geom_boxplot() + geom_point()+
+ labs(title = "VT2 HR: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
+  method = "t.test", # You can also use "wilcox.test" for non-parametric test
+  label = "p.format",
+  paired = TRUE
+)
 
 ```
 
+```{r scoringefficacy, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
 
+motiv<-read.csv("/Users/aubreykr/Desktop/exselfefficacy.csv")
+
+motiv<-motiv %>% 
+  rename(Timepoint = redcap_event_name) %>% 
+  dplyr::select(-c(exeffiency_date_enrolled, exercise_selfefficacy_complete)) %>% 
+  mutate(Timepoint = case_when(Timepoint == "scr_bl_ep_arm_1" ~ "Baseline",
+                               Timepoint == "week_12_ep_surveys_arm_1" ~ "Endpoint",
+                               Timepoint == "month_6_arm_1" ~ "Month 6"))
+
+# self-efficacy score ranges from 9-28; sum the 9 questions.
+motiv$efficacy_score <- rowSums(motiv[, 3:11])
+
+# combine efficacy with vo2 data
+motiv<-motiv %>% 
+  dplyr::select(record_id, Timepoint, efficacy_score)
+ 
+motiv$record_id <- as.numeric(motiv$record_id)
+
+data<-left_join(vo2, motiv, by=c("record_id", "Timepoint"))
+
+#ggplot(aes(x=Timepoint, y=VO2_Peak_mLkg, color=factor(record_id), group=record_id), data=vo2) + geom_point() +
+ # geom_line(aes(group = record_id), linetype = "dashed") +
+ # labs(title = "VO2 Peak: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) + theme(plot.title=element_text(hjust=0.5))
+
+ggplot(aes(x=Timepoint, y=efficacy_score), data=data) + geom_boxplot() + facet_wrap(~group)
+
+```
 
 
