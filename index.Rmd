@@ -137,6 +137,21 @@ cohort %>%
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("On-going Randomized or Completed Study: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
 
+
+completed_num<-cohort %>% 
+  filter(enrollment_status == "Completed") %>% 
+  count()
+
+cohort %>% 
+  filter(enrollment_status == "Completed") %>% 
+  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
+  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+facet_wrap(~strata)+
+  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+  ggtitle(paste0(completed_num, sep=" ", "Completed")) + guides(alpha = "none")
+
+
+
+
 ```
 
 
