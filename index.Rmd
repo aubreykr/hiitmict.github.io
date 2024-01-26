@@ -38,11 +38,10 @@ demog<-read.csv("/Users/aubreykr/Desktop/demog.csv")
 This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 
 ```{r asd, message=FALSE, warning=FALSE, echo=FALSE}
-
 # if missing, they have enrolled and update this
 demog$enrollment_status[is.na(demog$enrollment_status) == TRUE] <- "Enrolled (not screened yet)"
 
-demog$current_week <- factor(demog$current_week, levels=c("Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15", "Week 16", "Week 17", "Week 18", "Beyond Week 18?"))
+demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15", "Week 16", "Week 17", "Week 18", "Beyond Week 18?"))
 
 # number of participants currently training
 num<-length(demog$record_id[demog$enrollment_status== "On-going Randomized" & is.na(demog$current_week)==FALSE])
@@ -50,18 +49,21 @@ num<-length(demog$record_id[demog$enrollment_status== "On-going Randomized" & is
 # withdrawn participants: distinguish participants who started training vs. withdrew before study
 demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$start_month)==FALSE] <- "Withdrew after training"
 demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$start_month)==TRUE] <- "Withdrew before training"
-
 ```
 
 ```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE}
 # Snapshot of participant progress
-demog %>% 
-  filter(enrollment_status == "On-going Randomized" & current_week !="Not Training Yet") %>% 
-  ggplot(aes(x=current_week, fill=factor(record_id))) + geom_bar() +  scale_x_discrete(drop = FALSE) + theme_bw()+
-theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0("Plot Last Updated:", sep=" ", Sys.Date())) + ggtitle(paste0(num, sep=" ", "individuals are currently training")) +   labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5))+ scale_y_continuous(breaks = seq(0, 30, 2)) + geom_text(aes(label = record_id, y = ..count..), 
-            stat = "count", 
-            position = position_stack(vjust = 0.5), 
-            color = "black", size = 3) + ylim(c(0,2))
+demog %>%
+  filter(enrollment_status == "On-going Randomized") %>%
+  ggplot(aes(x = current_week, fill = factor(record_id))) + geom_bar() +
+  geom_text(stat = "count", aes(label = record_id, y = ..count..),
+            position = position_stack(vjust = 0.5), color = "black", size = 3) +
+  scale_x_discrete(drop = FALSE) + theme_bw() +
+  theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
+  xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
+  ggtitle(paste0(num, sep = " ", "individuals are training (or about to begin)")) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
+  scale_y_continuous(breaks = seq(0, 30, 2))
+
 ```
 
 ## How many workouts have they done?
@@ -71,12 +73,14 @@ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + xlab(paste0(
 # Filter for participants who are on-going and not controls
 training<-demog %>% 
   filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet") %>% 
-  dplyr::select(record_id, current_week, Group, quality_workouts_in_REDCap, total_workouts_in_REDCap, quality_fraction, training_status, sex, agegroup)
+  dplyr::select(record_id, current_week, Group, quality_workouts_in_REDCap, number_polar_used, number_fitbit_used, total_workouts_in_REDCap, quality_fraction, training_status, name_of_participant_buddy)
 
-training %>% 
-  arrange(current_week) %>% 
-  kable() %>%
-  kable_styling()
+
+training %>%
+  arrange(current_week) %>%
+  kable(col.names = c("Record ID","Current Week","Group","Quality Wkts", "Polar worn", "Fitbit worn","Total Wkts","Quality Fraction","Training Status", "Buddy"), align="c") %>%
+  kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
 ```
 
 
@@ -86,12 +90,13 @@ training %>%
 # Filter for participants who are completed and MICT
 completed_mict<-demog %>% 
   filter(enrollment_status == "Completed" & Group == "MICT") %>% 
-  dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, sex, agegroup)
+  dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, number_polar_used, number_fitbit_used, total_workouts_in_REDCap, sex, agegroup)
 
 completed_mict %>% 
-    arrange(quality_workouts_in_REDCap) %>% 
-  kable() %>%
-  kable_styling()
+    arrange(as.numeric(record_id)) %>% 
+  kable(col.names = c("Record ID", "Quality Wkts", "Percent Complete of 36 Wkts", "Polar Worn", "Fitbit Worn", "Total Wkts", "Sex", "Age"), align="c") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
 ```
 
 ### Completed HIIT participants
@@ -99,12 +104,20 @@ completed_mict %>%
 # Filter for participants who are completed and HIIT
 completed_hiit<-demog %>% 
   filter(enrollment_status == "Completed" & Group == "HIIT") %>% 
-  dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, sex, agegroup)
+  dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, number_polar_used,number_fitbit_used, total_workouts_in_REDCap, sex, agegroup)
 
 completed_hiit %>% 
-  arrange(quality_workouts_in_REDCap) %>% 
-  kable() %>%
-  kable_styling()
+  arrange(as.numeric(record_id)) %>% 
+   kable(col.names = c("Record ID", "Quality Wkts", "Percent Complete of 36 Wkts", "Polar Worn", "Fitbit Worn", "Total Wkts", "Sex", "Age"), align="c") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+
+demog %>% 
+  filter(enrollment_status == "Completed" & Group %in% c("HIIT", "MICT")) %>% 
+  ggplot(aes(y=percent_complete_of_36_wkts, x=Group)) + geom_boxplot() + geom_point() + ylab("Percent Complete of 36 Workouts") +
+  ggtitle("Percent Complete of 36 Workouts by Randomization Group") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5)) + ylim(c(0,100))
+
+
 ```
 
 ## Study Progress
@@ -415,5 +428,15 @@ cohort %>%
 # label(demog$agegroup) <- "Age Group"
 # table1(~sex + agegroup | group, data=demog, overall=F, caption="Demographics for Completed Participants")
 ```
+
+
+
+
+
+
+
+
+
+
 
 
