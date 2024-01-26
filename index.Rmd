@@ -111,14 +111,14 @@ completed_hiit %>%
   arrange(as.numeric(record_id)) %>% 
    kable(col.names = c("Record ID", "Quality Wkts", "Percent Complete of 36 Wkts", "Polar Worn", "Fitbit Worn", "Total Wkts", "Sex", "Age"), align="c") %>%
    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+```
 
-
+### HIIT vs. MICT
+```{r workouts3,message=FALSE, warning=FALSE, echo=FALSE}
 demog %>% 
   filter(enrollment_status == "Completed" & Group %in% c("HIIT", "MICT")) %>% 
   ggplot(aes(y=percent_complete_of_36_wkts, x=Group)) + geom_boxplot() + geom_point() + ylab("Percent Complete of 36 Workouts") +
   ggtitle("Percent Complete of 36 Workouts by Randomization Group") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5)) + ylim(c(0,100))
-
-
 ```
 
 ## Study Progress
