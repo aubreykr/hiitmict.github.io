@@ -127,7 +127,7 @@ demog %>%
 demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Lost to Follow-Up", "Screen failed", "Withdrew before training","On-going Randomized", "Withdrew after training", "Completed"))
 
 ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+
-  ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id)))) + theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+scale_y_continuous(limits=c(0,25), breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
+  ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id)))) + theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+scale_y_continuous(limits=c(0,30), breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
 ```
 
 
