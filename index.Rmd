@@ -26,6 +26,7 @@ library(lubridate)
 library(shiny)
 library(knitr)
 library(kableExtra)
+library(DT)
 ```
 
 
@@ -130,7 +131,7 @@ ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog
 ```
 
 
-## Progress toward filling 4 strata
+### Progress toward filling 4 strata
 ```{r progressstrata, message=FALSE, warning=FALSE, echo=FALSE}
 
 # Create sex + agebin variable
@@ -149,7 +150,10 @@ cohort %>%
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+facet_wrap(~strata)+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("On-going Randomized or Completed Study: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+```
 
+### Completed the Study
+```{r progressstrata2, message=FALSE, warning=FALSE, echo=FALSE}
 
 completed_num<-cohort %>% 
   filter(enrollment_status == "Completed") %>% 
@@ -161,8 +165,6 @@ cohort %>%
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+facet_wrap(~strata)+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste0(completed_num, sep=" ", "Completed")) + guides(alpha = "none")
-
-
 
 
 ```
@@ -429,6 +431,33 @@ cohort %>%
 # table1(~sex + agegroup | group, data=demog, overall=F, caption="Demographics for Completed Participants")
 ```
 
+
+
+```{r test, echo=FALSE}
+# Run a shiny app
+# library(ggplot2)
+# library(shiny)
+# library(DT)
+# 
+# # Server
+# server <- function(input, output) {
+#   # Filter data based on selections
+#   output$table <- DT::renderDataTable({
+#     data <- completed_mict
+#     datatable(data, options = list(rownames = FALSE))
+#   })
+# }
+# 
+# # UI
+# ui <- fluidPage(
+#   titlePanel("Basic DataTable"),
+#   # Create a new row for the table.
+#   DT::dataTableOutput("table")
+# )
+# 
+# shinyApp(ui, server)
+
+```
 
 
 
