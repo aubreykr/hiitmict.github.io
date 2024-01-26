@@ -66,7 +66,7 @@ demog %>%
 
 ```
 
-## How many workouts have they done?
+## Workout Adherence
 
 ### On-going participants
 ```{r workouts0, message=FALSE, warning=FALSE, echo=FALSE}
