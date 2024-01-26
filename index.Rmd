@@ -121,6 +121,7 @@ demog %>%
   ggtitle("Percent Complete of 36 Workouts by Randomization Group") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5)) + ylim(c(0,100))
 ```
 
+
 ## Study Progress
 ```{r newppl, message=FALSE, warning=FALSE, echo=FALSE}
 # Order levels of enrollment status
@@ -169,6 +170,29 @@ cohort %>%
 
 ```
 
+## Wearables vs. REDCap
+```{r wearables, message=FALSE, warning=FALSE, echo=FALSE}
+# read in wearables dataframes
+wearables<-read.csv("/Users/aubreykr/Desktop/wearable_data.csv")
+wearables$record_id<-as.factor(wearables$record_id)
+
+demog<-full_join(demog, wearables, by="record_id")
+
+# calculate num missing
+demog$num_missing_polar <- demog$wearable_polar_workouts - demog$number_polar_used
+demog$num_missing_fitbit <- demog$wearable_fitbit_workouts - demog$number_fitbit_used
+
+# set up data for table
+completed<-demog %>% 
+  filter(enrollment_status == "Completed" & Group != "Control") %>% 
+  select(record_id, number_polar_used, wearable_polar_workouts, num_missing_polar, number_fitbit_used, wearable_fitbit_workouts, num_missing_fitbit)
+
+# create table
+completed %>% 
+    arrange(as.numeric(record_id)) %>% 
+  kable(col.names = c("Record ID", "REDCap polar", "Wearable polar", "Num missing polar", "REDCap fitbit", "Wearable fitbit", "Num missing fitbit"), align="c") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+```
 
 *Thanks everybody for your hard work!*
 
