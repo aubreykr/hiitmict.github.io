@@ -167,7 +167,6 @@ cohort %>%
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste0(completed_num, sep=" ", "Completed")) + guides(alpha = "none")
 
-
 ```
 
 ## Wearables vs. REDCap
