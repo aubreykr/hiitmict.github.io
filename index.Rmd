@@ -173,7 +173,7 @@ cohort %>%
 ```{r wearables, message=FALSE, warning=FALSE, echo=FALSE}
 # read in wearables dataframes
 wearables<-read.csv("/Users/aubreykr/Desktop/wearable_data.csv")
-wearables$record_id<-as.factor(wearables$record_id)
+#wearables$record_id<-as.factor(wearables$record_id)
 
 demog<-full_join(demog, wearables, by="record_id")
 
