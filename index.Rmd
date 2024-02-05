@@ -20,6 +20,7 @@ This is designed to track study progress! Below is a weekly update.
 # Load packages
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(readxl)
 library(ggplot2)
 library(table1)
 library(lubridate)
@@ -27,6 +28,8 @@ library(shiny)
 library(knitr)
 library(kableExtra)
 library(DT)
+library(ggpubr)
+library(stringr)
 ```
 
 
@@ -191,15 +194,179 @@ completed %>%
     arrange(as.numeric(record_id)) %>% 
   kable(col.names = c("Record ID", "REDCap polar", "Wearable polar", "Num missing polar", "REDCap fitbit", "Wearable fitbit", "Num missing fitbit"), align="c") %>%
    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+write.csv(demog, "/Users/aubreykr/Desktop/fellowship_demog.csv")
 ```
 
 *Thanks everybody for your hard work!*
+
+```{r vo2 analysis,  echo=FALSE, include=FALSE, message=FALSE}
+vo2 <- gather(demog, key="Timepoint", value="VO2_Max", c(bl_vo2_max, ep_vo2_max))
+vo2$Timepoint[vo2$Timepoint == "bl_vo2_max"] <- "Week 0"
+vo2$Timepoint[vo2$Timepoint == "ep_vo2_max"] <- "Week 12"
+
+vo2 %>% 
+  filter(Group %in% c("HIIT", "MICT") & enrollment_status == "Completed") %>% 
+  ggplot(aes(x=Timepoint, y=VO2_Max)) + geom_boxplot() + geom_point()+
+  labs(title = "VO2: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~Group)+
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(method = "t.test",
+                                                                 label = "p.format",
+                                                                 paired = TRUE)
+# percent change
+demog$vo2change <- (demog$ep_vo2_max - demog$bl_vo2_max) / demog$bl_vo2_max * 100
+demog$bmi_change <- demog$ep_bmi - demog$bl_bmi
+demog$bodyfatchange <- demog$ep_percent_body_fat - demog$bl_percent_body_fat 
+
+demog %>% 
+  filter(enrollment_status == "Completed" & record_id != 4) %>% 
+  group_by(Group) %>% 
+  summarize(mean = mean(vo2change),
+            sd = sd(vo2change))
+
+
+demog %>% 
+  filter(enrollment_status == "Completed" & record_id !="4") %>% 
+  ggplot(aes(y=vo2change, x=Group, color=sex, group=Group)) + geom_boxplot() + geom_point()+ theme_bw()+
+  labs(title = "VO2 Max: Baseline vs. Endpoint", x = "Group", y = "% change in VO2 Max") + 
+  theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(method = "t.test",
+                                                                 label = "p.format",
+                                                                 paired = TRUE) + 
+  geom_hline(yintercept = 0, linetype="dashed") + labs(color="Sex")
+colnames(demog)
+
+```
+
+```{r testdata, echo=FALSE, include=FALSE}
+
+save<-demog %>% 
+ filter(enrollment_status == "Completed") 
+
+label(save$Group) <- "Randomization Group"
+label(save$sex)  <- "Sex"
+label(save$agegroup)  <- "Age Group"
+label(save$race) <- "Race"
+label(save$vo2change) <- "VO2 max"
+label(save$bmi_change) <- "BMI "
+label(save$bodyfatchange) <- "Body Fat"
+label(save$quality_workouts_in_REDCap) <- "Workouts Completed"
+units(save$vo2change)       <- "%"
+units(save$bmi_change) <- "kg/m2"
+units(save$bodyfatchange) <- "%"
+units(save$quality_workouts_in_REDCap) <- "%"
+
+my.render.cont <- function(x) {
+   with(stats.default(x), 
+       sprintf("%0.2f (%0.1f)", MEAN, SD))
+}
+  
+#table1(~sex + agegroup + vo2change + bmi_change + bodyfatchange + I(quality_workouts_in_REDCap/32 * 100) | Group, overall=F,
+     #    render.continuous=my.render.cont, render.missing=NULL, caption="Table 1. Participant Demographics and Preliminary Findings", data=save)
+
+
+# another table 1 version
+save<-demog %>% 
+  filter(enrollment_status == "Completed")
+
+label(save$Group) <- "Randomization Group"
+label(save$sex)  <- "Sex"
+label(save$agegroup)  <- "Age Group"
+label(save$race) <- "Race"
+label(save$vo2change) <- "VO2 max"
+label(save$bmi_change) <- "BMI "
+label(save$bodyfatchange) <- "Body Fat"
+label(save$quality_workouts_in_REDCap) <- "Workouts Completed"
+units(save$vo2change)       <- "%"
+units(save$bmi_change) <- "kg/m2"
+units(save$bodyfatchange) <- "%"
+units(save$quality_workouts_in_REDCap) <- "%"
+
+save$race[save$race == "Other Asian - please specify below (Hmong, Laotian, Thai, Pakistani, Cambodian, etc)"] <- "Other"
+table1(~sex + agegroup + race + Group,
+         render.continuous=my.render.cont, render.missing=NULL, caption="Table 1. Participant Demographics", data=save)
+
+
+
+
+```
+
+
+
+
+
+```{r dxa,  echo=FALSE, include=FALSE}
+
+dxa <- read_xlsx("/Users/aubreykr/Desktop/dxa_feb2.xlsx")
+
+completed <- demog %>% 
+ filter(enrollment_status == "Completed") %>% 
+  select(record_id, Group)
+
+# my.render.cont <- function(x) {
+#     with(stats.default(x), 
+#         sprintf("%0.2f (%0.1f)", MEAN, SD))
+# }
+# 
+# label(completed$Group) <- "Randomization Group"
+# label(completed$sex)  <- "Sex"
+# label(completed$agegroup)  <- "Age Group"
+# label(completed$race) <- "Race"
+# label(completed$bl_vo2_max) <- "VO2 max"
+# label(completed$bl_bmi) <- "BMI "
+# label(completed$bl_percent_body_fat) <- "Body Fat"
+# 
+# units(completed$bl_vo2_max)       <- "mL/kg/min"
+# units(completed$bl_bmi) <- "kg/m2"
+# units(completed$bl_percent_body_fat) <- "%"
+# 
+# table1(~Group + sex + agegroup + bl_vo2_max +  bl_bmi + bl_percent_body_fat,  data=completed, render.continuous=my.render.cont, caption="Table 1. Baseline Demographics")
+# 
+
+# Convert DXA to record ids we can merge
+dxa$study_id <- str_sub(dxa$study_id, -2)
+dxa$study_id <- as.numeric(dxa$study_id)
+dxa<-dxa %>% 
+  rename(record_id = study_id)
+
+# merge dataframes
+dxa<-dxa %>% 
+  select(record_id, timepoint, contains(c("strength", "endur", "VFAT", "TRUNK", "MUSCLE")))
+dxa<-left_join(completed, dxa, by="record_id")
+# convert to kg
+dxa[, 12:26] <- dxa[, 12:26] / 1000
+
+
+# Exploratory plots
+for (col_name in colnames(dxa)[4:26]) {
+  plot_data <- data.frame(value = dxa[[col_name]], timepoint = as.factor(dxa$timepoint), color=dxa$Group)
+  print(ggplot(plot_data, aes(x = timepoint, y = value)) + facet_wrap(~color)+
+    geom_boxplot() + geom_point() +
+    stat_summary(fun = "median", geom = "text", aes(label = round(..y.., 1)), vjust = -0.5, color = "red")+
+    ggtitle(col_name) + theme_bw() + theme(plot.title = element_text(hjust=0.5)))
+}
+  #stat_compare_means(comparisons = list(c("1", "2")), method = "t.test",label = "p.format", paired = TRUE)+
+
+ my.render.cont <- function(x) {
+    with(stats.default(x), 
+         sprintf("%0.2f (%0.1f)", MEAN, SD))
+}
+table1(~.| Group+timepoint, overall=F,  render.continuous=my.render.cont, data=dxa)
+
+colnames(demog)
+
+extra <- demog %>% 
+  select(record_id, sex, agegroup, bl_vo2_max, ep_vo2_max, bl_percent_body_fat, ep_percent_body_fat, bl_bmi, ep_bmi, percent_complete_of_36_wkts, total_workouts_in_REDCap)
+
+dxa2<-merge(dxa, extra, by="record_id")
+
+table1(~. | Group + timepoint, overall=F, render.continuous=my.render.cont, data=dxa2)
+```
+
+
 
 
 ```{r vo2checking, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
 ## Workout adherence and VO2 max
 
-# #library(readxl)
 # #vo2<-read_xlsx("/Users/aubreykr/Desktop/VO2_prelim_analysis/Yair_condensed_VO2_1_6_24.xlsx")
 # 
 # # remove missing rows
