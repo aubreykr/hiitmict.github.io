@@ -364,11 +364,11 @@ table1(~sex + agegroup + race + Group,
 
 ```{r dxa,  echo=FALSE, include=FALSE}
 
-dxa <- read_xlsx("/Users/aubreykr/Desktop/dxa_feb2.xlsx")
+#dxa <- read_xlsx("/Users/aubreykr/Desktop/dxa_feb2.xlsx")
 
-completed <- demog %>% 
- filter(enrollment_status == "Completed") %>% 
-  select(record_id, Group)
+#completed <- demog %>% 
+# filter(enrollment_status == "Completed") %>% 
+#  select(record_id, Group)
 
 # my.render.cont <- function(x) {
 #     with(stats.default(x), 
@@ -391,43 +391,43 @@ completed <- demog %>%
 # 
 
 # Convert DXA to record ids we can merge
-dxa$study_id <- str_sub(dxa$study_id, -2)
-dxa$study_id <- as.numeric(dxa$study_id)
-dxa<-dxa %>% 
-  rename(record_id = study_id)
-
-# merge dataframes
-dxa<-dxa %>% 
-  select(record_id, timepoint, contains(c("strength", "endur", "VFAT", "TRUNK", "MUSCLE")))
-dxa<-left_join(completed, dxa, by="record_id")
-# convert to kg
-dxa[, 12:26] <- dxa[, 12:26] / 1000
-
-
-# Exploratory plots
-for (col_name in colnames(dxa)[4:26]) {
-  plot_data <- data.frame(value = dxa[[col_name]], timepoint = as.factor(dxa$timepoint), color=dxa$Group)
-  print(ggplot(plot_data, aes(x = timepoint, y = value)) + facet_wrap(~color)+
-    geom_boxplot() + geom_point() +
-    stat_summary(fun = "median", geom = "text", aes(label = round(..y.., 1)), vjust = -0.5, color = "red")+
-    ggtitle(col_name) + theme_bw() + theme(plot.title = element_text(hjust=0.5)))
-}
-  #stat_compare_means(comparisons = list(c("1", "2")), method = "t.test",label = "p.format", paired = TRUE)+
-
- my.render.cont <- function(x) {
-    with(stats.default(x), 
-         sprintf("%0.2f (%0.1f)", MEAN, SD))
-}
-table1(~.| Group+timepoint, overall=F,  render.continuous=my.render.cont, data=dxa)
-
-colnames(demog)
-
-extra <- demog %>% 
-  select(record_id, sex, agegroup, bl_vo2_max, ep_vo2_max, bl_percent_body_fat, ep_percent_body_fat, bl_bmi, ep_bmi, percent_complete_of_36_wkts, total_workouts_in_REDCap)
-
-dxa2<-merge(dxa, extra, by="record_id")
-
-table1(~. | Group + timepoint, overall=F, render.continuous=my.render.cont, data=dxa2)
+# dxa$study_id <- str_sub(dxa$study_id, -2)
+# dxa$study_id <- as.numeric(dxa$study_id)
+# dxa<-dxa %>% 
+#   rename(record_id = study_id)
+# 
+# # merge dataframes
+# dxa<-dxa %>% 
+#   select(record_id, timepoint, contains(c("strength", "endur", "VFAT", "TRUNK", "MUSCLE")))
+# dxa<-left_join(completed, dxa, by="record_id")
+# # convert to kg
+# dxa[, 12:26] <- dxa[, 12:26] / 1000
+# 
+# 
+# # Exploratory plots
+# for (col_name in colnames(dxa)[4:26]) {
+#   plot_data <- data.frame(value = dxa[[col_name]], timepoint = as.factor(dxa$timepoint), color=dxa$Group)
+#   print(ggplot(plot_data, aes(x = timepoint, y = value)) + facet_wrap(~color)+
+#     geom_boxplot() + geom_point() +
+#     stat_summary(fun = "median", geom = "text", aes(label = round(..y.., 1)), vjust = -0.5, color = "red")+
+#     ggtitle(col_name) + theme_bw() + theme(plot.title = element_text(hjust=0.5)))
+# }
+#   #stat_compare_means(comparisons = list(c("1", "2")), method = "t.test",label = "p.format", paired = TRUE)+
+# 
+#  my.render.cont <- function(x) {
+#     with(stats.default(x), 
+#          sprintf("%0.2f (%0.1f)", MEAN, SD))
+# }
+# table1(~.| Group+timepoint, overall=F,  render.continuous=my.render.cont, data=dxa)
+# 
+# colnames(demog)
+# 
+# extra <- demog %>% 
+#   select(record_id, sex, agegroup, bl_vo2_max, ep_vo2_max, bl_percent_body_fat, ep_percent_body_fat, bl_bmi, ep_bmi, percent_complete_of_36_wkts, total_workouts_in_REDCap)
+# 
+# dxa2<-merge(dxa, extra, by="record_id")
+# 
+# table1(~. | Group + timepoint, overall=F, render.continuous=my.render.cont, data=dxa2)
 ```
 
 
