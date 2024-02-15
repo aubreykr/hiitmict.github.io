@@ -69,6 +69,8 @@ demog %>%
   ggtitle(paste0(num, sep = " ", "individuals are training (or about to begin)")) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
   scale_y_continuous(breaks = seq(0, 30, 2))
 
+View(demog)
+
 ```
 
 ## Workout Adherence
