@@ -153,7 +153,6 @@ demog$strata[demog$sex == "Male" & demog$agegroup == "35-55 yrs"]<-"M, 35-55"
 cohort<-demog %>% 
   filter(enrollment_status == "On-going Randomized" | enrollment_status == "Completed")
 
-View(demog)
 # Progress Toward Filling 4 Strata (M, F, 18-35 yrs, 35-55 yrs)
 
 cohort %>% 
