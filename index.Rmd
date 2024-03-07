@@ -240,14 +240,14 @@ counts_start<-projected %>%
   count()
 counts_start<-counts_start %>% 
   filter(!start_month %in% c("Apr 2023", "Jan 2024"))
-avg_start <- 4.5
+avg_start <- round(mean(counts_start$n),2)
 
 counts_end<-projected %>% 
   group_by(end_month) %>% 
   count()
 counts_end<-counts_end %>% 
   filter(!end_month %in% c("Aug 2023", "Jan 2024"))
-avg_end <- mean(counts_end$n)
+avg_end <- round(mean(counts_end$n),2)
 
 
 projected %>% 
