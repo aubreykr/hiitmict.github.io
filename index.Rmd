@@ -153,6 +153,7 @@ demog$strata[demog$sex == "Male" & demog$agegroup == "35-55 yrs"]<-"M, 35-55"
 cohort<-demog %>% 
   filter(enrollment_status == "On-going Randomized" | enrollment_status == "Completed")
 
+View(demog)
 # Progress Toward Filling 4 Strata (M, F, 18-35 yrs, 35-55 yrs)
 
 cohort %>% 
@@ -224,6 +225,9 @@ projected$start_month[is.na(projected$start_month)]<-"Feb 2024"
 projected$end_month[is.na(projected$end_month)]<-"May 2024"
 
 ```
+
+
+
 
 ```{r plotprojected, echo=FALSE,  message=FALSE, warning=FALSE}
 
