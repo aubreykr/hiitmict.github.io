@@ -210,7 +210,7 @@ Note: average counts exclude the first month and Dec 2023 for winter closure whi
 # Filter for relevant variables: start and end month, rand group, record_id
 projected <- demog  %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized")) %>% 
-  select(record_id, Group, start_month, end_month)
+  dplyr::select(record_id, Group, start_month, end_month)
 
 # Specify order of months
 projected$start_month<-as.factor(projected$start_month)
@@ -283,7 +283,7 @@ data<-read.csv("/Users/aubreykr/Library/CloudStorage/GoogleDrive-aubreykr@stanfo
 # Rename to record_id and place at front of dataset
 data<-data %>% 
   rename(record_id = ppt_id) %>% 
-  select(record_id, everything())
+  dplyr::select(record_id, everything())
 
 # Create date 
 data<-data %>% 
@@ -317,9 +317,9 @@ data_fitbit$fitbit_minutes = data_fitbit$n/60
 
 # remove n column
 data_polar<-data_polar %>% 
- select(-c(n))
+ dplyr::select(-c(n))
 data_fitbit<-data_fitbit %>% 
-  select(-c(n))
+  dplyr::select(-c(n))
 
 # MERGE WEARABLE DATA
 
@@ -357,7 +357,7 @@ demog$num_missing_fitbit <- demog$wearable_fitbit_workouts - demog$number_fitbit
 # set up data for table
 completed<-demog %>% 
   filter(enrollment_status == "Completed" & Group != "Control") %>% 
-  select(record_id, number_polar_used, wearable_polar_workouts, num_missing_polar, number_fitbit_used, wearable_fitbit_workouts, num_missing_fitbit)
+  dplyr::select(record_id, number_polar_used, wearable_polar_workouts, num_missing_polar, number_fitbit_used, wearable_fitbit_workouts, num_missing_fitbit)
 
 # create table
 completed %>% 
