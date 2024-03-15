@@ -45,7 +45,7 @@ This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 # if missing, they have enrolled and update this
 demog$enrollment_status[is.na(demog$enrollment_status) == TRUE] <- "Enrolled (not screened yet)"
 
-demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15", "Week 16", "Week 17", "Week 18", "Beyond Week 18?"))
+demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Beyond Week 15"))
 
 # number of participants currently training
 num<-length(demog$record_id[demog$enrollment_status== "On-going Randomized" & is.na(demog$current_week)==FALSE])
@@ -58,7 +58,7 @@ demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$sta
 ```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE}
 # Snapshot of participant progress
 demog %>%
-  filter(enrollment_status == "On-going Randomized") %>%
+  filter(enrollment_status == "On-going Randomized" & record_id != 70) %>%
   ggplot(aes(x = current_week, fill = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = record_id, y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3) +
