@@ -274,6 +274,33 @@ ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() +
 
 ```
 
+
+## Biopsy Tracker
+
+```{r biopsy, message=FALSE, warning=FALSE, echo=FALSE}
+
+demog$baseline_visit_biopsy_complete <- ifelse(demog$baseline_visit_biopsy_complete=="Complete", 1, 0)
+demog$endpoint_visit_biopsy_complete <- ifelse(demog$endpoint_visit_biopsy_complete=="Complete", 1, 0)
+
+biopsy<-demog %>% 
+  filter(baseline_visit_biopsy_complete == 1 | endpoint_visit_biopsy_complete == 1) %>% 
+  gather(key = "Timepoint", value="biopsy_completed", c("baseline_visit_biopsy_complete", "endpoint_visit_biopsy_complete"))
+
+biopsy<-biopsy %>% 
+  select(record_id, enrollment_status, sex, agegroup, Group, Timepoint, biopsy_completed) %>% 
+  mutate(Timepoint = ifelse(Timepoint=="baseline_visit_biopsy_complete", "Baseline", "Endpoint"))
+
+biopsy %>% 
+  filter(biopsy_completed==1) %>% 
+  group_by(Group, Timepoint) %>% 
+  count() %>% 
+  kable() %>% 
+  kable_styling(full_width = FALSE)
+
+```
+
+
+
 ## Workout Tracking: Wearables vs. REDCap
 ```{r wearables, message=FALSE, warning=FALSE, echo=FALSE}
 
