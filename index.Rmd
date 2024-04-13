@@ -166,6 +166,7 @@ cohort %>%
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("Participants Complete by end of June: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+
 ```
 
 ### NUMBER COMPLETED
