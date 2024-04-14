@@ -79,9 +79,8 @@ training<-demog %>%
   filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet") %>% 
   dplyr::select(record_id, current_week, Group, quality_workouts_in_REDCap, number_polar_used, number_fitbit_used, total_workouts_in_REDCap, quality_fraction, training_status, name_of_participant_buddy)
 
-
 training %>%
-  arrange(current_week) %>%
+  arrange(quality_fraction) %>%
   kable(col.names = c("Record ID","Current Week","Group","Quality Wkts", "Polar worn", "Fitbit worn","Total Wkts","Quality Fraction","Training Status", "Buddy"), align="c") %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
