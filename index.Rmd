@@ -93,7 +93,7 @@ training<-demog %>%
   dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num,  quality_workouts_in_REDCap, number_polar_used, quality_fraction, name_of_participant_buddy, HR_zone)
 
 training %>%
-  arrange(quality_fraction) %>%
+  arrange(current_week) %>%
   kable(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality Wkts","Polar worn",  "Quality (%)", "Buddy", "HR Target"), align="c") %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
@@ -138,12 +138,12 @@ completed_hiit %>%
 demog %>% 
   filter(enrollment_status == "Completed" & Group %in% c("HIIT", "MICT")) %>% 
   ggplot(aes(y=total_workouts_in_REDCap, x=Group)) + geom_boxplot() +geom_point() + geom_hline(yintercept = 32, linetype="dashed") + ylab("Total Workouts in REDCap") +
-  ggtitle("Total Workouts in REDCap") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5))
+  ggtitle("Completed Participants (n=30): Total Workouts") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5)) + ylim(c(0,40))
 
 demog %>% 
   filter(enrollment_status == "Completed" & Group %in% c("HIIT", "MICT")) %>% 
   ggplot(aes(y=quality_workouts_in_REDCap, x=Group)) + geom_boxplot() +geom_jitter(aes(color=factor(record_id))) + geom_hline(yintercept = 32, linetype="dashed") + ylab("Total Workouts in REDCap") +
-  ggtitle("Quality Workouts in REDCap") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5)) + ylim(c(0,36))
+  ggtitle("Completed Participants (n=30): Good Workouts") + theme_bw()+ theme(plot.title = element_text(hjust = 0.5)) + ylim(c(0,40)) + labs(color="Participant Num")
 
 
 
@@ -188,7 +188,6 @@ cohort %>%
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("Participants Complete by end of June: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
-
 ```
 
 ### NUMBER COMPLETED
@@ -245,7 +244,6 @@ projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023"
 
 projected$start_month[is.na(projected$start_month)]<-"Feb 2024"
 projected$end_month[is.na(projected$end_month)]<-"May 2024"
-
 ```
 
 
