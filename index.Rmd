@@ -89,7 +89,7 @@ demog$expected_num <- (as.numeric(demog$expected_num) - 1)*3
 
 # Filter for participants who are on-going and not controls
 training<-demog %>% 
-  filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet") %>% 
+  filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE) %>% 
   dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone)
 
 # Flag people who need to be extended
@@ -104,7 +104,8 @@ training %>%
 
 # Active controls
 demog %>% 
-  filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70") %>% 
+  filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70" &
+           is.na(ep_vo2_max)==TRUE) %>% 
   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover) %>% 
   arrange(current_week, name_of_participant_buddy) %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>% 
