@@ -100,7 +100,7 @@ training %>%
   mutate(record_id = cell_spec(record_id, background=ifelse(EXTEND =="YES", "orange", ""))) %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EXTEND"), align="c", escape=FALSE, caption="Actively Training") %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
-View(demog)
+
 
 # Active controls
 demog %>% 
