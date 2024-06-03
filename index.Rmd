@@ -89,27 +89,36 @@ demog$expected_num <- (as.numeric(demog$expected_num) - 1)*3
 
 # Filter for participants who are on-going and not controls
 training<-demog %>% 
-  filter(enrollment_status == "On-going Randomized" & Group != "Control" & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE) %>% 
-  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone)
+  filter(enrollment_status == "On-going Randomized" & current_week !="Not Training Yet") %>% 
+  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, ep_vo2_max)
 
 # Flag people who need to be extended
 training$EXTEND <- ifelse(training$expected_num - training$total_workouts_in_REDCap >=4, "YES", " ")
+training$EXTEND[training$Group == "Control"]<- " "
 
+# EP vo2 complete?
+training$EP_VO2[is.na(training$ep_vo2_max)==FALSE] <- "YES"
+training$EP_VO2[is.na(training$ep_vo2_max)==TRUE] <- " "
+training<-training %>% 
+  dplyr::select(-ep_vo2_max)
+
+# Make table
 training %>%
   arrange(current_week) %>%
   mutate(record_id = cell_spec(record_id, background=ifelse(EXTEND =="YES", "orange", ""))) %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EXTEND"), align="c", escape=FALSE, caption="Actively Training") %>%
+  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EXTEND", "EP_VO2"), align="c", escape=FALSE, caption="Active Participants") %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 
 # Active controls
-demog %>% 
-  filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70" &
-           is.na(ep_vo2_max)==TRUE) %>% 
-  dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover) %>% 
-  arrange(current_week, name_of_participant_buddy) %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>% 
-  kable_styling()
+# demog %>% 
+#   filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70" &
+#            is.na(ep_vo2_max)==TRUE) %>% 
+#   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover) %>% 
+#   arrange(current_week, name_of_participant_buddy) %>% 
+#   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>% 
+#   kable_styling()
+
 ```
 
 
@@ -202,11 +211,15 @@ cohort %>%
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("On-going Randomized or Completed Study: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
 
-cohort %>% 
+cohort<-cohort %>% 
+  filter(record_id != "81" & record_id !="69")
+
+cohort%>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste("Participants Complete by end of July: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+  ggtitle(paste("Participants Complete by end of August: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+
 ```
 
 
@@ -320,7 +333,7 @@ biopsy<-demog %>%
   gather(key = "Timepoint", value="biopsy_completed", c("baseline_visit_biopsy_complete", "endpoint_visit_biopsy_complete"))
 
 biopsy<-biopsy %>% 
-  select(record_id, enrollment_status, sex, agegroup, Group, Timepoint, biopsy_completed) %>% 
+  dplyr::select(record_id, enrollment_status, sex, agegroup, Group, Timepoint, biopsy_completed) %>% 
   mutate(Timepoint = ifelse(Timepoint=="baseline_visit_biopsy_complete", "Baseline", "Endpoint"))
 
 biopsy %>% 
