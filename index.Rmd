@@ -39,12 +39,12 @@ demog<-read.csv("/Users/aubreykr/Google Drive/Shared drives/HIIT and Endurance S
 # Pull in data to see if EP surveys are done
 epsurveys<-read.csv("/Users/aubreykr/Google Drive/Shared drives/HIIT and Endurance Study/Data/data/Redcap/Raw_Data/64208_WorkoutDates_Raw.csv")
 epsurveys<-epsurveys %>% 
-  select(record_id, redcap_event_name, perceived_stress_scale_pss10_complete)
+  dplyr::select(record_id, redcap_event_name, perceived_stress_scale_pss10_complete)
 epsurveys<-epsurveys %>% 
   filter(redcap_event_name == "week_12_ep_surveys_arm_1")
 epsurveys<-epsurveys %>% 
   rename(EP_surveys = perceived_stress_scale_pss10_complete) %>% 
-  select(record_id, EP_surveys)
+  dplyr::select(record_id, EP_surveys)
 epsurveys<-epsurveys %>% 
   mutate(EP_surveys = ifelse(EP_surveys == "Complete", "YES", ""))
 ```
@@ -73,6 +73,7 @@ demog<-demog %>%
 
 # manually assign HR zone for crossover records
 demog$HR_zone[demog$record_id == "1070"] <- "122-134"
+demog$HR_zone[demog$record_id == "1076"] <- "114-126"
 
 demog<-full_join(demog, epsurveys, by=c("record_id"))
 ```
@@ -129,14 +130,14 @@ training %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 
-# Active controls
-# demog %>% 
-#   filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70" &
-#            is.na(ep_vo2_max)==TRUE) %>% 
-#   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover) %>% 
-#   arrange(current_week, name_of_participant_buddy) %>% 
-#   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>% 
-#   kable_styling()
+#Active controls
+demog %>%
+  filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70" &
+           is.na(ep_vo2_max)==TRUE) %>%
+  dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover) %>%
+  arrange(current_week, name_of_participant_buddy) %>%
+  kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>%
+  kable_styling()
 
 ```
 
@@ -355,12 +356,22 @@ biopsy<-biopsy %>%
   dplyr::select(record_id, enrollment_status, sex, agegroup, Group, Timepoint, biopsy_completed) %>% 
   mutate(Timepoint = ifelse(Timepoint=="baseline_visit_biopsy_complete", "Baseline", "Endpoint"))
 
+biopsy$Group[biopsy$record_id == 1076] <- "MICT"
+
 biopsy %>% 
   filter(biopsy_completed==1) %>% 
   group_by(Group, Timepoint) %>% 
   count() %>% 
   kable() %>% 
   kable_styling(full_width = FALSE)
+
+biopsy %>% 
+  filter(biopsy_completed==1) %>% 
+  arrange(Group, record_id) %>% 
+  dplyr::select(record_id, Group, Timepoint) %>% 
+  kable() %>% 
+  kable_styling(full_width = FALSE)
+
 
 ```
 
