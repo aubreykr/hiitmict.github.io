@@ -139,6 +139,12 @@ demog %>%
   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>%
   kable_styling()
 
+# upcoming ppts
+demog %>% 
+  filter(enrollment_status == "On-going Randomized" & current_week =="Not Training Yet") %>% 
+  dplyr::select(record_id, current_week, Group, name_of_participant_buddy, HR_zone) %>% 
+  kbl(col.names = c("Record ID","Current Week","Group","Buddy", "HR zone"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
+  kable_styling()
 ```
 
 
