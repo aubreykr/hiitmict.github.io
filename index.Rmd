@@ -238,7 +238,7 @@ cohort%>%
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste("Participants Complete by end of August: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+  ggtitle(paste("Participants Complete by end of Sept: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
 
 ```
 
