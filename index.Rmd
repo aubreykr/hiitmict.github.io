@@ -238,7 +238,7 @@ cohort %>%
   ggtitle(paste("On-going Randomized or Completed Study: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
 
 cohort<-cohort %>% 
-  filter(record_id != "81" & record_id !="69")
+  filter(record_id != "81" & record_id !="69" & record_id !="1070" & record_id !="1076")
 
 cohort%>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
