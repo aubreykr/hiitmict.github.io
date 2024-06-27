@@ -16,7 +16,6 @@ output:
 ---
 This is designed to track study progress! Below is a weekly update.
 
-# Add this
 ```{r setup, include=FALSE}
 # Load packages
 knitr::opts_chunk$set(echo = TRUE)
