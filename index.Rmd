@@ -43,7 +43,7 @@ epsurveys<-epsurveys %>%
 epsurveys<-epsurveys %>% 
   filter(redcap_event_name == "week_12_ep_surveys_arm_1")
 epsurveys<-epsurveys %>% 
-  rename(EP_surveys = perceived_stress_scale_pss10_complete) %>% 
+  dplyr::rename(EP_surveys = perceived_stress_scale_pss10_complete) %>% 
   dplyr::select(record_id, EP_surveys)
 epsurveys<-epsurveys %>% 
   mutate(EP_surveys = ifelse(EP_surveys == "Complete", "YES", ""))
@@ -120,7 +120,7 @@ training<-training %>%
 
 training<-training %>% 
   relocate(EP_surveys, .after=last_col()) %>% 
-  rename(buddy = name_of_participant_buddy)
+  dplyr::rename(buddy = name_of_participant_buddy)
   
 # Make table
 training %>%
@@ -222,9 +222,9 @@ cohort %>%
 
 # Create sex + agebin variable
 demog$strata[demog$sex == "Female" & demog$agegroup == "18-35 yrs"]<-"F, 18-35"
-demog$strata[demog$sex == "Female" & demog$agegroup == "35-55 yrs"]<-"F, 35-55"
+demog$strata[demog$sex == "Female" & demog$agegroup == "35-65 yrs"]<-"F, 35-65"
 demog$strata[demog$sex == "Male" & demog$agegroup == "18-35 yrs"]<-"M, 18-35"
-demog$strata[demog$sex == "Male" & demog$agegroup == "35-55 yrs"]<-"M, 35-55"
+demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-65"
 
 cohort<-demog %>% 
   filter(enrollment_status == "On-going Randomized" | enrollment_status == "Completed" & record_id !="1070" & record_id !="1076" & record_id !="1091")
@@ -392,7 +392,7 @@ data<-read.csv("/Users/aubreykr/Library/CloudStorage/GoogleDrive-aubreykr@stanfo
 
 # Rename to record_id and place at front of dataset
 data<-data %>% 
-  rename(record_id = ppt_id) %>% 
+  dplyr::rename(record_id = ppt_id) %>% 
   dplyr::select(record_id, everything())
 
 # Create date 
