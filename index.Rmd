@@ -205,11 +205,11 @@ cohort<-demog %>%
   filter(enrollment_status == "On-going Randomized" | enrollment_status == "Completed")
 
 completed_num<-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE) %>% 
+  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
   count()
 
 cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE) %>% 
+  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
