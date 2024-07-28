@@ -133,7 +133,7 @@ training %>%
 #Active controls
 demog %>%
   filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet" & record_id !="70" &
-           is.na(ep_vo2_max)==TRUE  & record_id != 76) %>%
+           is.na(ep_vo2_max)==TRUE  & record_id != 76 & record_id <= 1000) %>%
   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover) %>%
   arrange(current_week, name_of_participant_buddy) %>%
   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?"), align="c", escape=FALSE, caption="Active Controls") %>%
@@ -145,6 +145,7 @@ demog %>%
   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, HR_zone) %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "HR zone"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
   kable_styling()
+
 ```
 
 
