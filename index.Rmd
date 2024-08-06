@@ -47,6 +47,12 @@ epsurveys<-epsurveys %>%
   dplyr::select(record_id, EP_surveys)
 epsurveys<-epsurveys %>% 
   mutate(EP_surveys = ifelse(EP_surveys == "Complete", "YES", ""))
+
+# Create variable for crossover ppts
+demog<-demog %>% 
+  mutate(crossover = ifelse(record_id >=1000, "yes", "no"))
+
+
 ```
 
 ## Where are participants this week?
@@ -82,7 +88,7 @@ demog<-full_join(demog, epsurveys, by=c("record_id"))
 # Snapshot of participant progress
 demog %>%
   filter(enrollment_status == "On-going Randomized" & record_id != 70  & record_id != 76 | enrollment_status=="Enrolled (not screened yet)") %>%
-  ggplot(aes(x = current_week, fill = factor(record_id))) + geom_bar() +
+  ggplot(aes(x = current_week, alpha = factor(crossover), fill = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = record_id, y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
   scale_x_discrete(drop = FALSE) + theme_bw() +
@@ -146,7 +152,23 @@ demog %>%
   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "HR zone"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
   kable_styling()
 
+
 ```
+
+### Crossover Participant Tracking
+```{r crossovers, message=FALSE, warning=FALSE, echo=FALSE}
+
+demog$crossover_rand_group[demog$crossover_rand_group == "Endurance"]<- "MICT"
+
+demog %>% 
+  filter(crossover == "yes") %>% 
+  dplyr::select(record_id,  crossover_rand_group) %>% 
+  kbl(col.names = c("Record ID","Rand Group"), align="c", escape=FALSE, caption="Crossover Participants") %>%
+  kable_styling() 
+
+
+```
+
 
 
 
