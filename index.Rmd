@@ -261,10 +261,10 @@ cohort %>%
 ```{r progressstrata, message=FALSE, warning=FALSE, echo=FALSE}
 
 # Create sex + agebin variable
-demog$strata[demog$sex == "Female" & demog$agegroup == "18-35 yrs"]<-"F, 18-35"
+demog$strata[demog$sex == "Female" & demog$agegroup == "18-34 yrs"]<-"F, 18-35"
 demog$strata[demog$sex == "Female" & demog$agegroup == "35-65 yrs"]<-"F, 35-65"
-demog$strata[demog$sex == "Male" & demog$agegroup == "18-35 yrs"]<-"M, 18-35"
-demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-65"
+demog$strata[demog$sex == "Male" & demog$agegroup == "18-34 yrs"]<-"M, 18-34"
+demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-64"
 
 cohort<-demog %>% 
   filter(enrollment_status == "On-going Randomized" & record_id <1000 | enrollment_status == "Completed" & record_id <1000)
