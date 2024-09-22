@@ -255,6 +255,7 @@ cohort %>%
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none")
 
+
 ```
 
 ### Progress toward filling 4 strata
