@@ -80,6 +80,7 @@ demog<-demog %>%
 # manually assign HR zone for crossover records
 demog$HR_zone[demog$record_id == "1070"] <- "122-134"
 demog$HR_zone[demog$record_id == "1076"] <- "114-126"
+demog$HR_zone[demog$record_id == "1103"] <- "133-149"
 
 demog<-full_join(demog, epsurveys, by=c("record_id"))
 ```
