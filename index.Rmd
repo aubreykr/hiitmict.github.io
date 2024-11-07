@@ -71,10 +71,6 @@ demog$enrollment_status[is.na(demog$enrollment_status) == TRUE] <- "Enrolled (no
 # Specify order of weeks for plots
 demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14"))
 
-# withdrawn participants: distinguish participants who started training vs. withdrew before study
-demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$start_month)==FALSE] <- "Withdrew after training"
-demog$enrollment_status[demog$enrollment_status == "Withdrawn" & is.na(demog$start_month)==TRUE] <- "Withdrew before training"
-
 # new column for target HR zone depending on group
 demog<-demog %>% 
   mutate(HR_zone = case_when(Group == "MICT" ~ bl_heart_rate_mict,
@@ -86,11 +82,6 @@ demog$HR_zone[demog$record_id == "1076"] <- "114-126"
 demog$HR_zone[demog$record_id == "1103"] <- "133-149"
 
 demog<-full_join(demog, epsurveys, by=c("record_id"))
-
-# Reassign groups to crossovers who are labeled as controls
-demog<-demog %>% 
-  mutate(Group = ifelse(record_id > 1000, crossover_rand_group, Group))
-
 ```
 
 ## Where are participants this week?
@@ -105,15 +96,15 @@ ongoing<-demog %>% filter(enrollment_status == "On-going Randomized"  & is.na(ep
 current_num<-length(unique(ongoing$record_id))
 
 demog %>%
-  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)") %>%
-  ggplot(aes(x = current_week, fill = factor(record_id))) + geom_bar() +
-  geom_text(stat = "count", aes(label = record_id, y = ..count..),
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)") %>% 
+  ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
+  geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
   scale_x_discrete(drop = FALSE) + theme_bw() +
   theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
   ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_y_continuous(breaks = seq(0, 30, 2))  +  geom_vline(xintercept = which(levels(demog$current_week) == "Week 12"), color = "red", linetype = "dashed")
+  scale_y_continuous(breaks = seq(0, 30, 2))  +  geom_vline(xintercept = which(levels(demog$current_week) == "Week 12"), color = "red", linetype = "dashed") 
 
 ```
 
@@ -134,6 +125,17 @@ demog %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 
+
+# EP survey check
+demog %>%
+   filter(enrollment_status == "On-going Randomized" & (EP_VO2 != " " | current_week == "Week 12") & !record_id %in% c(76, 1076, 91, 92, 94, 98, 103, 105, 107, 110, 112, 1091, 117, 119, 123, 115))%>%
+  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EP_VO2, EP_surveys) %>% 
+  arrange(current_week, record_id)  %>% 
+  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys"), align="c", escape=FALSE, caption=paste0("EP survey check (randomized and EP VO2 done / at Week 12)")) %>%
+  kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+
+
 #Active controls
 # demog %>%
 #   filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet"  & !record_id %in% c(103, 76, 98, 91) & record_id <= 1000) %>%
@@ -145,7 +147,7 @@ demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
 
 # upcoming ppts
 demog %>% 
-  filter(enrollment_status %in% c( "On-going Randomized", "Enrolled (not screened yet)") & current_week =="Not Training Yet") %>% 
+  filter(enrollment_status %in% c( "On-going Randomized", "Enrolled (not screened yet)") & current_week =="Not Training Yet" ) %>% 
   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, HR_zone, bl_VO2) %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "HR zone", "BL VO2 done?"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
   kable_styling()
@@ -189,7 +191,7 @@ demog$crossover_rand_group[demog$crossover_rand_group == "Endurance"]<- "MICT"
 
 demog %>% 
   filter(crossover == "yes") %>% 
-  dplyr::select(record_id,  crossover_rand_group, EP_VO2) %>% 
+  dplyr::select(record_id,  Group, EP_VO2) %>% 
   kbl(col.names = c("Record ID","Rand Group", "EP VO2 done?"), align="c", escape=FALSE, caption="Crossover Participants") %>%
   kable_styling() 
 
@@ -389,11 +391,11 @@ avg_end <- round(mean(counts_end$n),2)
 
 projected %>% 
   ggplot(aes(x=start_month)) + geom_bar(fill="#F8766D") + stat_count(geom = "text", color="white", aes(label = ..count..), vjust = 2) +
-  ggtitle(paste0("Start Months, average count/month:", sep=" ", avg_start)) + theme(plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = current_date, linetype="dotted", color="black")
+  ggtitle(paste0("Start Months, average count/month:", sep=" ", avg_start)) + theme(plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = current_date, linetype="dotted", color="black")+ theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) 
 
 projected %>% 
   ggplot(aes(x=end_month)) + geom_bar(fill="#00BFC4") + stat_count(geom = "text", color="white", aes(label = ..count..), vjust = 2) +
-  ggtitle(paste0("End Months, average count/month:", sep=" ", avg_end)) + theme(plot.title = element_text(hjust = 0.5))+ geom_vline(xintercept = current_date, linetype="dotted", color="black")
+  ggtitle(paste0("End Months, average count/month:", sep=" ", avg_end)) + theme(plot.title = element_text(hjust = 0.5))+ geom_vline(xintercept = current_date, linetype="dotted", color="black") + theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) 
 
 # Combined start + end plot
 
@@ -406,7 +408,7 @@ projected$Month<-factor(projected$Month, levels=c("Apr 2023", "May 2023", "Jun 2
 
 ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  ggtitle(paste0(num_projected, sep=" ", "completing the study by the last date plotted")) + theme(plot.title = element_text(hjust = 0.5))+ geom_vline(xintercept = current_date, linetype="dotted", color="black") + stat_count(geom = "text", color="white", aes(label = ..count..), vjust = 2) + scale_y_continuous(breaks = seq(0,12,by=2))
+  ggtitle(paste0(num_projected, sep=" ", "completing the study by the last date plotted")) + theme(plot.title = element_text(hjust = 0.5))+ geom_vline(xintercept = current_date, linetype="dotted", color="black") + stat_count(geom = "text", color="white", aes(label = ..count..), vjust = 2) + scale_y_continuous(breaks = seq(0,20,by=2))  +theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) 
 
 ```
 
@@ -442,9 +444,9 @@ biopsy %>%
   kable() %>% 
   kable_styling(full_width = FALSE)
 
-biopsy %>% 
-  filter(biopsy_completed==1) %>% 
-  ggplot(aes(x=Group, fill=Timepoint))+geom_bar(position="dodge") + theme_bw() + ylim(c(0,5)) + ggtitle("Number of biopsies complete") + theme(plot.title = element_text(hjust = 0.5))
+# biopsy %>% 
+#   filter(biopsy_completed==1) %>% 
+#   ggplot(aes(x=Group, fill=Timepoint))+geom_bar(position="dodge") + theme_bw() + ylim(c(0,5)) + ggtitle("Number of biopsies complete") + theme(plot.title = element_text(hjust = 0.5))
 
 ```
 
