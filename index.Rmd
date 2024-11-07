@@ -15,7 +15,15 @@ output:
     toc_depth: '3'
 ---
 This is designed to track study progress! Below is a weekly update.
+  
+- **Things to keep track of:**
 
+    - Are green/blue participants on track with workouts?
+    - Have participants at the end...
+        - completed EP surveys and enough workouts?
+        - willing to crossover?
+    - Are new participants willing to do biopsy?
+   
 ```{r setup, include=FALSE}
 # Load packages
 knitr::opts_chunk$set(echo = TRUE)
@@ -104,9 +112,9 @@ demog %>%
   theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
   ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_y_continuous(breaks = seq(0, 30, 2))  +  geom_vline(xintercept = which(levels(demog$current_week) == "Week 12"), color = "red", linetype = "dashed") 
-
+  scale_y_continuous(breaks = seq(0, 30, 2)) 
 ```
+
 
 ## Workout Adherence
 
@@ -330,7 +338,7 @@ ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog
 # PLOT CONSENTING
 demog$date_consent<-as.yearmon(demog$date_consent)
 demog$date_consent <- as.factor(demog$date_consent)
-demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024"))
+demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025"))
 
 consent<-demog %>% 
   filter(is.na(date_consent)==FALSE)
@@ -357,9 +365,9 @@ projected <- demog  %>%
 projected$start_month<-as.factor(projected$start_month)
 projected$end_month<-as.factor(projected$end_month)
 
-projected$start_month<-factor(projected$start_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024"))
+projected$start_month<-factor(projected$start_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025"))
 
-projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024"))
+projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025"))
 
 projected$start_month[is.na(projected$start_month)]<-"Feb 2024"
 projected$end_month[is.na(projected$end_month)]<-"May 2024"
@@ -404,7 +412,7 @@ num_projected <- length(unique(projected$record_id))
 # Gather and color by timepoint
 projected <- gather(projected, key = "Timepoint", value = "Month", c("start_month", "end_month"))
 projected$Timepoint <- factor(projected$Timepoint, levels=c("start_month", "end_month"))
-projected$Month<-factor(projected$Month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024"))
+projected$Month<-factor(projected$Month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025"))
 
 ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -449,6 +457,26 @@ biopsy %>%
 #   ggplot(aes(x=Group, fill=Timepoint))+geom_bar(position="dodge") + theme_bw() + ylim(c(0,5)) + ggtitle("Number of biopsies complete") + theme(plot.title = element_text(hjust = 0.5))
 
 ```
+
+```{r demographics}
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
 
 
 
