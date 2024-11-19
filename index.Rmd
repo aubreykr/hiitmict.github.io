@@ -100,11 +100,11 @@ This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 
 #---------Snapshot of participant progress------------
                                                      
-ongoing<-demog %>% filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)")
+ongoing<-demog %>% filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)" | record_id == 127)
 current_num<-length(unique(ongoing$record_id))
 
 demog %>%
-  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)") %>% 
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)" | record_id ==127) %>% 
   ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
@@ -264,16 +264,16 @@ cohort<-demog %>%
   filter(is.na(ep_vo2_max)==FALSE)
 
 completed_num<-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id <= 1000) %>% 
-  count()
+  filter(is.na(ep_vo2_max)==FALSE & record_id <= 1000)
 
+completed_num<-length(completed_num$record_id)
 
 cohort %>% 
   filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none")
+  ggtitle(paste0(completed_num, sep=" ", "Completed with VO2 max pre/post")) + guides(alpha = "none")
 
 
 
@@ -352,7 +352,7 @@ demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", 
 
 consent<-demog %>% 
   filter(is.na(date_consent)==FALSE)
-consented_num<-count(consent)
+consented_num<-length(consent$record_id)
 
 demog %>% 
   filter(is.na(date_consent)==FALSE) %>% 
