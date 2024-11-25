@@ -100,11 +100,14 @@ This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 
 #---------Snapshot of participant progress------------
                                                      
-ongoing<-demog %>% filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)" | record_id == 127)
+ongoing<-demog %>% 
+  filter(!record_id %in% c(114, 121)) %>% 
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)")
 current_num<-length(unique(ongoing$record_id))
 
 demog %>%
-  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)" | record_id ==127) %>% 
+  filter(!record_id %in% c(114, 121)) %>% 
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)") %>% 
   ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
@@ -122,10 +125,12 @@ demog %>%
 ```{r workouts0, message=FALSE, warning=FALSE, echo=FALSE}
 
 counts<-demog %>%
+   filter(!record_id %in% c(114, 121)) %>% 
    filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE)
 active_num <- length(unique(counts$record_id))
 # Filter for participants who are on-going
 demog %>%
+   filter(!record_id %in% c(114, 121)) %>% 
    filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE) %>%
   dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EXTEND, EP_surveys) %>% 
   arrange(current_week, record_id)  %>% 
@@ -454,6 +459,10 @@ biopsy %>%
   count() %>% 
   kable() %>% 
   kable_styling(full_width = FALSE)
+
+biopsy %>% 
+  filter(biopsy_completed==1) %>% 
+  ggplot(aes(x=Group, fill=Timepoint))+geom_bar() + theme_bw() + ggtitle("Biopsies completed") + theme(plot.title=element_text(hjust=0.5)) + scale_y_continuous(n.breaks=10)
 
 biopsy %>% 
   filter(biopsy_completed==1) %>% 
