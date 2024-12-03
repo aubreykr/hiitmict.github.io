@@ -101,12 +101,12 @@ This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 #---------Snapshot of participant progress------------
                                                      
 ongoing<-demog %>% 
-  filter(!record_id %in% c(114, 121)) %>% 
+  filter(!record_id %in% c(114, 121, 134)) %>% 
   filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)")
 current_num<-length(unique(ongoing$record_id))
 
 demog %>%
-  filter(!record_id %in% c(114, 121)) %>% 
+  filter(!record_id %in% c(114, 121, 134)) %>% 
   filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)") %>% 
   ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
