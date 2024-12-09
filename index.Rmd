@@ -515,21 +515,22 @@ biopsy %>%
 
 
 
-## Workout Tracking: Wearables vs. REDCap
+
 ```{r wearables, message=FALSE, warning=FALSE, echo=FALSE}
+## Workout Tracking: Wearables vs. REDCap
 
 ## PROCESSING DATA FROM GOOGLE DRIVE ##
 # Read in wearable data from Google Drive
-data<-read.csv("/Users/aubreykr/Library/CloudStorage/GoogleDrive-aubreykr@stanford.edu/Shared drives/HIIT and Endurance Study/Data/data/workout/workout_allevents.csv")
+#data<-read.csv("/Users/aubreykr/Library/CloudStorage/GoogleDrive-aubreykr@stanford.edu/Shared drives/HIIT and Endurance 3Study/Data/data/workout/workout_allevents.csv")
 
 # Rename to record_id and place at front of dataset
-data<-data %>% 
-  dplyr::rename(record_id = ppt_id) %>% 
-  dplyr::select(record_id, everything())
-
-# Create date 
-data<-data %>% 
-  mutate(date = as.Date(data$X_realtime))
+# data<-data %>% 
+#   dplyr::rename(record_id = ppt_id) %>% 
+#   dplyr::select(record_id, everything())
+# 
+# # Create date 
+# data<-data %>% 
+#   mutate(date = as.Date(data$X_realtime))
 
 # Unique participants in the dataset
 #length(unique(data$date))
@@ -539,73 +540,73 @@ data<-data %>%
 
 # COUNT POLAR WORKOUTS
 # Count number of polar workouts
-data_polar<-data %>% 
-  filter(sourcetype == "WearablePolar") %>% 
-  group_by(record_id, date) %>% 
-  count()
-
-# Create num minutes per workout column
-data_polar$polar_minutes = data_polar$n/60
-
-# COUNT FITBIT WORKOUTS
-# Count number of fitbit workouts
-data_fitbit<-data %>% 
-  filter(sourcetype == "WearableFitbit") %>% 
-  group_by(record_id, date) %>% 
-  count()
-
-# Create num minutes per workout column
-data_fitbit$fitbit_minutes = data_fitbit$n/60
-
-# remove n column
-data_polar<-data_polar %>% 
- dplyr::select(-c(n))
-data_fitbit<-data_fitbit %>% 
-  dplyr::select(-c(n))
-
-# MERGE WEARABLE DATA
-
-# Merge polar and fitbit dataframes
-summary<-full_join(data_polar, data_fitbit, by=c("record_id", "date"))
-
-# Total number workouts for Polar, Fitbit
-num_polar_workouts <- summary %>% 
- filter(is.na(polar_minutes)!=TRUE) %>% 
- group_by(record_id) %>% 
- summarize(wearable_polar_workouts = length(unique(date)))
-
-num_fitbit_workouts <- summary %>% 
- filter(is.na(fitbit_minutes)!=TRUE) %>% 
- group_by(record_id) %>% 
- summarize(wearable_fitbit_workouts = length(unique(date)))
-
-# SUMMARIZE NUMBER WORKOUTS
-#num_polar_workouts
-#num_fitbit_workouts
-
-wearables<-full_join(num_polar_workouts, num_fitbit_workouts, by="record_id")
+# data_polar<-data %>% 
+#   filter(sourcetype == "WearablePolar") %>% 
+#   group_by(record_id, date) %>% 
+#   count()
+# 
+# # Create num minutes per workout column
+# data_polar$polar_minutes = data_polar$n/60
+# 
+# # COUNT FITBIT WORKOUTS
+# # Count number of fitbit workouts
+# data_fitbit<-data %>% 
+#   filter(sourcetype == "WearableFitbit") %>% 
+#   group_by(record_id, date) %>% 
+#   count()
+# 
+# # Create num minutes per workout column
+# data_fitbit$fitbit_minutes = data_fitbit$n/60
+# 
+# # remove n column
+# data_polar<-data_polar %>% 
+#  dplyr::select(-c(n))
+# data_fitbit<-data_fitbit %>% 
+#   dplyr::select(-c(n))
+# 
+# # MERGE WEARABLE DATA
+# 
+# # Merge polar and fitbit dataframes
+# summary<-full_join(data_polar, data_fitbit, by=c("record_id", "date"))
+# 
+# # Total number workouts for Polar, Fitbit
+# num_polar_workouts <- summary %>% 
+#  filter(is.na(polar_minutes)!=TRUE) %>% 
+#  group_by(record_id) %>% 
+#  summarize(wearable_polar_workouts = length(unique(date)))
+# 
+# num_fitbit_workouts <- summary %>% 
+#  filter(is.na(fitbit_minutes)!=TRUE) %>% 
+#  group_by(record_id) %>% 
+#  summarize(wearable_fitbit_workouts = length(unique(date)))
+# 
+# # SUMMARIZE NUMBER WORKOUTS
+# #num_polar_workouts
+# #num_fitbit_workouts
+# 
+# wearables<-full_join(num_polar_workouts, num_fitbit_workouts, by="record_id")
 ```
 
 ```{r wearable merging, messages=FALSE, warning=FALSE, echo=FALSE}
 
 ## JOIN MYPHD/POLAR DATA WITH DEMOG FRAME ##
 
-demog<-full_join(demog, wearables, by="record_id")
-
-# calculate num missing
-demog$num_missing_polar <- demog$wearable_polar_workouts - demog$number_polar_used
-demog$num_missing_fitbit <- demog$wearable_fitbit_workouts - demog$number_fitbit_used
-
-# set up data for table
-completed<-demog %>% 
-  filter(enrollment_status == "Completed" & Group != "Control") %>% 
-  dplyr::select(record_id, number_polar_used, wearable_polar_workouts, num_missing_polar, number_fitbit_used, wearable_fitbit_workouts, num_missing_fitbit)
-
-# create table
-completed %>% 
-    arrange(as.numeric(record_id)) %>% 
-  kable(col.names = c("Record ID", "REDCap polar", "Wearable polar", "Num missing polar", "REDCap fitbit", "Wearable fitbit", "Num missing fitbit"), align="c") %>%
-   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+# demog<-full_join(demog, wearables, by="record_id")
+# 
+# # calculate num missing
+# demog$num_missing_polar <- demog$wearable_polar_workouts - demog$number_polar_used
+# demog$num_missing_fitbit <- demog$wearable_fitbit_workouts - demog$number_fitbit_used
+# 
+# # set up data for table
+# completed<-demog %>% 
+#   filter(enrollment_status == "Completed" & Group != "Control") %>% 
+#   dplyr::select(record_id, number_polar_used, wearable_polar_workouts, num_missing_polar, number_fitbit_used, wearable_fitbit_workouts, num_missing_fitbit)
+# 
+# # create table
+# completed %>% 
+#     arrange(as.numeric(record_id)) %>% 
+#   kable(col.names = c("Record ID", "REDCap polar", "Wearable polar", "Num missing polar", "REDCap fitbit", "Wearable fitbit", "Num missing fitbit"), align="c") %>%
+#    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 ```
 
