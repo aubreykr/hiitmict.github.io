@@ -213,10 +213,10 @@ demog %>%
   kable_styling() 
 
 # Create sex + agebin variable
-demog$strata[demog$sex == "Female" & demog$agegroup == "18-34 yrs"]<-"F, 18-35"
+demog$strata[demog$sex == "Female" & demog$agegroup == "18-34 yrs"]<-"F, 18-34"
 demog$strata[demog$sex == "Female" & demog$agegroup == "35-65 yrs"]<-"F, 35-65"
 demog$strata[demog$sex == "Male" & demog$agegroup == "18-34 yrs"]<-"M, 18-34"
-demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-64"
+demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-65"
 
 demog %>% 
   filter(crossover == "yes") %>% 
@@ -285,7 +285,7 @@ demog %>%
 ```
 
 ### NUMBER COMPLETED
-```{r progressstrata2, message=FALSE, warning=FALSE, echo=FALSE}
+```{r progressstrata3, message=FALSE, warning=FALSE, echo=FALSE}
 cohort<-demog %>% 
   filter(is.na(ep_vo2_max)==FALSE)
 
@@ -325,12 +325,12 @@ demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-64"
 cohort<-demog %>% 
   filter(enrollment_status == "On-going Randomized" & record_id <1000 | enrollment_status == "Completed" & record_id <1000)
 
-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
-  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
-  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
-  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none") + facet_wrap(~strata)
+# cohort %>% 
+#   filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
+#   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
+#   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+#   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+#   ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none") + facet_wrap(~strata)
 
 cohort %>% 
   filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
@@ -366,6 +366,51 @@ cohort %>%
 
 ```
 
+### ALL PARTICIPANTS RANDOMIZED
+```{r progressstrata2, message=FALSE, warning=FALSE, echo=FALSE}
+
+randomized<-demog %>% 
+  filter(Group != "New Participant")
+
+randomized_exclude_crossover<-demog %>% 
+  filter(Group != "New Participant" & record_id < 1000)
+
+num_rand<-length(randomized$record_id)
+num_rand_no_cross<-length(randomized_exclude_crossover$record_id)
+
+randomized %>% 
+  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+  ggtitle(paste0(num_rand, sep=" ", "were randomized (including crossovers)")) + guides(alpha = "none")
+
+randomized_exclude_crossover %>% 
+  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+  ggtitle(paste0(num_rand_no_cross, sep=" ", "were randomized (excluding crossovers)")) + guides(alpha = "none")
+
+
+withdraw<-demog %>% 
+  filter(Group != "New Participant" & enrollment_status != "On-going Randomized" & enrollment_status != "Completed")
+
+# withdraw %>% 
+#   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
+#   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+#   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+#   ggtitle(paste0("Withdrew or LTFU")) + guides(alpha = "none") + facet_wrap(~strata)
+
+
+
+# cohort %>% 
+#   filter(is.na(ep_vo2_max)==FALSE & record_id > 1000) %>% 
+#   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
+#   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+#   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+#   ggtitle(paste0("Num Crossovers Completed")) + guides(alpha = "none")
+
+```
+
 
 ## Study Progress
 ```{r newppl, message=FALSE, warning=FALSE, echo=FALSE}
@@ -381,6 +426,9 @@ demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled 
 ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+theme_bw()+
   ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id))))+ theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
 
+#demog %>% 
+  #filter(enrollment_status == "Withdrawn (before training)")
+
 ```
 
 ### NUMBER CONSENTED
@@ -388,7 +436,7 @@ ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog
 # PLOT CONSENTING
 demog$date_consent<-as.yearmon(demog$date_consent)
 demog$date_consent <- as.factor(demog$date_consent)
-demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "March 2025", "April 2025", "May 2025"))
+demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
 
 consent<-demog %>% 
   filter(is.na(date_consent)==FALSE)
@@ -415,9 +463,9 @@ projected <- demog  %>%
 projected$start_month<-as.factor(projected$start_month)
 projected$end_month<-as.factor(projected$end_month)
 
-projected$start_month<-factor(projected$start_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "March 2025", "April 2025", "May 2025"))
+projected$start_month<-factor(projected$start_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
 
-projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "March 2025", "April 2025", "May 2025"))
+projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
 
 projected$start_month[is.na(projected$start_month)]<-"Jan 2025"
 projected$end_month[is.na(projected$end_month)]<-"April 2025"
@@ -468,12 +516,12 @@ ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() + theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggtitle(paste0(num_projected, sep=" ", "completing the study by the last date plotted")) + theme(plot.title = element_text(hjust = 0.5))+ geom_vline(xintercept = current_date, linetype="dotted", color="black") + stat_count(geom = "text", color="white", aes(label = ..count..), vjust = 2) + scale_y_continuous(breaks = seq(0,20,by=2))  +theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) 
 
-
 ```
 
 
 ```{r, include=FALSE}
-make_table <- function(data) {
+
+make_table <- function(data){
   # Simplify race categories
   data$race[data$race == "Other Asian - please specify below (Hmong, Laotian, Thai, Pakistani, Cambodian, etc)"] <- "Other"
   data$race <- as.factor(fct_infreq(data$race))
@@ -512,29 +560,114 @@ make_table <- function(data) {
   count <- length(data$record_id)
 
   # Generate Table 1
-  table1(
+  return(table1(
     ~ sex + age + race + ethnicity + bl_bmi + bl_percent_body_fat + bl_vo2_max | Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
-    overall = FALSE,
     caption = paste0(
       "Table 1. Baseline Demographics of Participants (n=",
       count,
       ")"
     ),
     data = data
-  )
+  ))
+
 }
 
-# Completed Participants
-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
+# Randomized Participants
+randomized_exclude_crossover %>% 
   make_table()
 
+randomized %>% 
+  make_table()
+
+withdraw %>% 
+  make_table()
+
+# Completed participants
+cohort %>%
+  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>%
+  make_table()
 
 # Projected Participants
-cohort %>% 
+cohort %>%
   make_table()
+
+cohort %>%
+  ggplot(aes(y=age, x=sex))+geom_violin()+geom_jitter(width = 0.2)+facet_wrap(~agegroup)
+
+cohort %>%
+  ggplot(aes(y=age, x=sex))+geom_violin()+geom_jitter(width = 0.2, aes(color=agegroup))
+
+cohort %>%
+  ggplot(aes(y=age, x=sex))+geom_violin()+geom_jitter(width = 0.2)+ggtitle("Age for Females vs. Males")
+
+cohort %>%
+  ggplot(aes(x=age, color=sex))+theme_bw()+geom_density()+ggtitle("Age for Females vs. Males")+theme(plot.title=element_text(hjust=0.5))
+
+cohort %>%
+  ggplot(aes(y=bl_vo2_max, x=Group, color=Group))+theme_bw()+geom_boxplot()+ggtitle("Baseline VO2 Max across Groups")+theme(plot.title=element_text(hjust=0.5))+geom_jitter(width=0.2)
+
+cohort %>%
+  ggplot(aes(y=bl_bmi, x=Group, color=Group))+theme_bw()+geom_boxplot()+ggtitle("Baseline BMI across Groups")+theme(plot.title=element_text(hjust=0.5))+geom_jitter(width=0.2)
+
+cohort %>%
+  ggplot(aes(y=age, x=Group, color=Group))+theme_bw()+geom_boxplot()+ggtitle("Age across Groups")+theme(plot.title=element_text(hjust=0.5))+geom_jitter(width=0.2)
+
+
+cohort %>%
+  ggplot(aes(y=age, x=sex, color=sex))+theme_bw()+geom_boxplot()+ggtitle("Age by sex")+theme(plot.title=element_text(hjust=0.5))+geom_jitter(width=0.2)
+
+
+cohort %>%
+  ggplot(aes(x=Group, fill=race))+theme_bw()+geom_bar(position="dodge")+ggtitle("Race across groups")+theme(plot.title=element_text(hjust=0.5))+ylab("Proportion")
+
+
+cohort %>%
+  group_by(sex, agegroup) %>%
+  count()
+
+cohort %>%
+  group_by(sex, agegroup) %>%
+  summarize(mean(age),
+            sd(age))
+
+cohort %>%
+  group_by(sex) %>%
+  summarize(mean(age),
+            sd(age))
+
+demog %>% 
+  group_by(enrollment_status) %>% 
+  count()
+
+demog %>% 
+  filter(Group !="New Participant" & record_id < 1000) %>% 
+  group_by(Group) %>% 
+  count()
+
+
+demog %>% 
+  filter(Group != "New Participant") %>% 
+  group_by(Group, enrollment_status) %>% 
+  count()
+
+demog %>% 
+  group_by(enrollment_status,Group) %>% 
+  count()
+
+
+demog %>% 
+  filter(record_id < 1000) %>% 
+  group_by(Group, enrollment_status) %>% 
+  count()
+
+
+demog %>% 
+  filter(Group =="New Participant" & record_id < 1000) %>% 
+  group_by(enrollment_status) %>% 
+  count()
+
 ```
 
 
@@ -604,25 +737,34 @@ adipose_df<-adipose_df %>%
 # Plots
 muscle_df %>% 
   filter(Completed == 1) %>% 
-  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) 
+  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,15))
 
 adipose_df %>% 
   filter(Completed == 1) %>% 
-  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) 
+  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,15))
 
 
 ```
 
-```{r demographics}
+```{r demographics, inlude=FALSE, echo=FALSE, message=FALSE}
+
+
+# withdraw %>% 
+#   group_by(reason_for_withdraw_aft) %>% 
+#   count()
+# 
+# withdraw %>%
+#   group_by(reason_for_withdrawing_aft) %>% 
+#   count()
 
 
 
-
-
-
-
-
-
+# withdraw %>% 
+#   group_by(enrollment_status) %>% 
+#   count()
+# 
+# withdraw %>% 
+#   group_by
 
 
 
