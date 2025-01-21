@@ -108,7 +108,19 @@ demog %>%
   scale_x_discrete(drop = FALSE) + theme_bw() +
   theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
-  ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Group") + theme(plot.title = element_text(hjust = 0.5)) +
+  scale_y_continuous(breaks = seq(0, 30, 2))
+
+demog %>%
+  filter(!record_id %in% c(114, 121, 134)) %>% 
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)") %>% 
+  ggplot(aes(x = current_week, fill=sex, group = factor(record_id))) + geom_bar() +
+  geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
+            position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
+  scale_x_discrete(drop = FALSE) + theme_bw() +
+  theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
+  xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
+  ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Sex") + theme(plot.title = element_text(hjust = 0.5)) +
   scale_y_continuous(breaks = seq(0, 30, 2))
 ```
 
@@ -143,8 +155,8 @@ demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
 # upcoming ppts
 demog %>% 
   filter(enrollment_status %in% c( "On-going Randomized", "Enrolled (not screened yet)") & current_week =="Not Training Yet" ) %>% 
-  dplyr::select(record_id, current_week, Group, name_of_participant_buddy, HR_zone, bl_VO2) %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Buddy", "HR zone", "BL VO2 done?"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
+  dplyr::select(record_id, current_week, Group, sex, HR_zone, bl_VO2) %>% 
+  kbl(col.names = c("Record ID","Current Week","Group","Sex", "HR zone", "BL VO2 done?"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
   kable_styling()
 
 
