@@ -84,13 +84,19 @@ demog$HR_zone[demog$record_id == "1112"] <- "141-162"
 demog$HR_zone[demog$record_id == "1116"] <- "112-120"
 
 demog<-full_join(demog, epsurveys, by=c("record_id"))
+
+# Create sex + agebin variable
+demog$strata[demog$sex == "Female" & demog$agegroup == "18-34 yrs"]<-"F, 18-34"
+demog$strata[demog$sex == "Female" & demog$agegroup == "35-65 yrs"]<-"F, 35-65"
+demog$strata[demog$sex == "Male" & demog$agegroup == "18-34 yrs"]<-"M, 18-34"
+demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-65"
 ```
 
 ## Where are participants this week?
 
 This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 
-```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE}
+```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE, fig.width=7, fig.height=7}
 
 #---------Snapshot of participant progress------------
                                                      
@@ -114,7 +120,7 @@ demog %>%
 demog %>%
   filter(!record_id %in% c(114, 121, 134)) %>% 
   filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)") %>% 
-  ggplot(aes(x = current_week, fill=sex, group = factor(record_id))) + geom_bar() +
+  ggplot(aes(x = current_week, fill=strata, group = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
   scale_x_discrete(drop = FALSE) + theme_bw() +
@@ -692,6 +698,22 @@ demog %>%
   count()
 
 ```
+
+
+## Age of Cohort
+```{r codehere,message=FALSE, warning=FALSE, echo=FALSE}
+
+demog %>% 
+  filter(enrollment_status %in% c("Enrolled (not screened yet)")) %>% 
+  ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("New Participants")
+  
+demog %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
+  ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("All Participants")
+```
+
+
+
 
 ## Biopsy Tracker
 
