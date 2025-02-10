@@ -782,10 +782,16 @@ adipose_df<-adipose_df %>%
 muscle_df %>% 
   filter(Completed == 1) %>% 
   ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,15))
+muscle_df %>% 
+  filter(Completed == 1) %>% 
+  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,15))+facet_wrap(~sex)
 
 adipose_df %>% 
   filter(Completed == 1) %>% 
   ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,15))
+adipose_df %>% 
+  filter(Completed == 1) %>% 
+  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,15))+facet_wrap(~sex)
 
 
 ```
