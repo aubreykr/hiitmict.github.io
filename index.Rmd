@@ -581,7 +581,7 @@ make_table <- function(data){
 
   # Generate Table 1
   return(table1(
-    ~ sex + age + race + ethnicity + bl_bmi + bl_percent_body_fat + bl_vo2_max | Group,
+    ~ sex + age + bl_bmi + bl_vo2_max + ep_vo2_max | Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
     caption = paste0(
@@ -596,7 +596,7 @@ make_table <- function(data){
 
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized")) %>% 
+  filter(enrollment_status %in% c("Completed")) %>% 
   make_table()
 
 demog %>% 
@@ -697,6 +697,8 @@ demog %>%
   group_by(enrollment_status) %>% 
   count()
 
+View(demog)
+
 ```
 
 
@@ -706,10 +708,11 @@ demog %>%
 demog %>% 
   filter(enrollment_status %in% c("Enrolled (not screened yet)")) %>% 
   ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("New Participants")
-  
+
 demog %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
-  ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("All Participants")
+  ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("Age for All Participants (n=94)")
+
 ```
 
 
