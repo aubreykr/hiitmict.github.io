@@ -697,8 +697,6 @@ demog %>%
   group_by(enrollment_status) %>% 
   count()
 
-View(demog)
-
 ```
 
 
