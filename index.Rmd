@@ -356,14 +356,14 @@ cohort %>%
   ggplot(aes(x=sex, fill=sex, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none") + facet_wrap(~Group)
+  ggtitle(paste0(completed_num, sep=" ", "Completed with Study")) + guides(alpha = "none") + facet_wrap(~Group)
 
 cohort %>% 
   filter(is.na(ep_vo2_max)==FALSE & record_id < 1000) %>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none")
+  ggtitle(paste0(completed_num, sep=" ", "Completed with Study")) + guides(alpha = "none")
 
 
 # Progress Toward Filling 4 Strata (M, F, 18-35 yrs, 35-55 yrs)
@@ -581,7 +581,7 @@ make_table <- function(data){
 
   # Generate Table 1
   return(table1(
-    ~ sex + age + bl_bmi + bl_vo2_max + ep_vo2_max | Group,
+    ~ sex + age + bl_vo2_max | Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
     caption = paste0(
