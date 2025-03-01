@@ -162,9 +162,9 @@ demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
 # upcoming ppts
 demog %>% 
   filter(enrollment_status %in% c( "On-going Randomized", "Enrolled (not screened yet)") & current_week =="Not Training Yet" ) %>% 
-  dplyr::select(record_id, current_week, Group, sex, HR_zone, bl_VO2) %>% 
+  dplyr::select(record_id, current_week, Group, sex, HR_zone, bl_VO2) %>% arrange(desc(bl_VO2)) %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Sex", "HR zone", "BL VO2 done?"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
-  kable_styling()
+  kable_styling() 
 
 
 
