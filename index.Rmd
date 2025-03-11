@@ -148,6 +148,7 @@ counts<-demog %>%
    filter(!record_id %in% c(114, 121)) %>% 
    filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE)
 active_num <- length(unique(counts$record_id))
+
 # Filter for participants who are on-going
 demog %>%
    filter(!record_id %in% c(114, 121)) %>% 
@@ -216,7 +217,6 @@ demog %>%
 
 #mitras %>%
   #filter(Date.of.Stress.Test.Visit != "" | Date.of.Endpoint.Stress.Test.Visit !="")
-
 
 ```
 
