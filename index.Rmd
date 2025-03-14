@@ -599,7 +599,7 @@ demog %>%
   make_table()
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") & record_id !=1125) %>% 
   make_table()
 
 df<-demog %>% 
