@@ -350,14 +350,14 @@ cohort<-demog %>%
 #   ggtitle(paste0(completed_num, sep=" ", "Completed with CPX pre/post")) + guides(alpha = "none") + facet_wrap(~strata)
 
 cohort %>% 
-   filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133) %>% 
+   filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133 | record_id ==107) %>% 
   ggplot(aes(x=sex, fill=sex, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste0(completed_num, sep=" ", "Completed with Study")) + guides(alpha = "none") + facet_wrap(~Group)
 
 cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133) %>% 
+  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133 | record_id ==107) %>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
@@ -373,13 +373,14 @@ cohort %>%
   ggtitle(paste("On-going Randomized or Completed Study: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
 
 cohort<-cohort %>% 
-  filter(record_id != "81" & record_id !="69" & record_id !="1070" & record_id !="1076" & record_id !="1091")
+  filter(record_id != "81" & record_id !="69" & record_id !="1070" & record_id !="1076" & record_id !="1091" & record_id != "1125")
 
 cohort %>% 
   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste("Sum of on-going + completed: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
+
 
 ```
 
@@ -594,12 +595,16 @@ make_table <- function(data){
 
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed") | record_id ==133) %>% 
+  filter(enrollment_status %in% c("Completed")) %>% 
   make_table()
 
 demog %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
   make_table()
+
+df<-demog %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)"))
+df$record_id
 
 # Randomized Participants
 randomized_exclude_crossover %>% 
