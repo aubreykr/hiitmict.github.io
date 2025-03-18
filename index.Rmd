@@ -561,6 +561,7 @@ make_table <- function(data){
   label(data$age) <- "Age"
   label(data$bl_percent_body_fat) <- "Body Fat"
   label(data$quality_workouts_in_REDCap) <- "Workouts Completed"
+  label(data$percent_complete_of_36_wkts) <- "Workouts Completed"
   label(data$ethnicity) <- "Hispanic"
 
   # Specify units
@@ -569,6 +570,7 @@ make_table <- function(data){
   units(data$bl_bmi) <- "kg/m2"
   units(data$bl_percent_body_fat) <- "%"
   units(data$quality_workouts_in_REDCap) <- "%"
+  units(data$percent_complete_of_36_wkts) <- "%"
 
   # Define custom renderer for continuous variables
   my.render.cont <- function(x) {
@@ -580,7 +582,7 @@ make_table <- function(data){
 
   # Generate Table 1
   return(table1(
-    ~ sex + age + bl_vo2_max | Group,
+    ~ sex + age + bl_vo2_max + percent_complete_of_36_wkts | Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
     caption = paste0(
@@ -599,7 +601,7 @@ demog %>%
   make_table()
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") & record_id !=1125) %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125) %>% 
   make_table()
 
 df<-demog %>% 
