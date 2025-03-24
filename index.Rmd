@@ -767,6 +767,11 @@ demog$bl_adipose <- ifelse(demog$bl_adipose=="Yes", 1, 0)
 demog$ep_adipose <- ifelse(demog$ep_adipose=="Yes", 1, 0)
 demog$Group[demog$record_id==162]<-"HIIT"
 
+biop_for_jessi<-demog %>% 
+  select(record_id, Group,  bl_muscle, bl_adipose, ep_muscle, ep_adipose) %>% 
+  filter(is.na(bl_adipose) !=TRUE)
+
+write.csv(biop_for_jessi, "/Users/aubreykr/Desktop/biopsylist.csv")
 
 # Format muscle df
 muscle_df<-demog %>% 
@@ -801,7 +806,6 @@ adipose_df %>%
 adipose_df %>% 
   filter(Completed == 1) %>% 
   ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+facet_wrap(~sex)
-
 
 ```
 
