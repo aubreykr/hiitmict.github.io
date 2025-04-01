@@ -583,7 +583,7 @@ make_table <- function(data){
 
   # Generate Table 1
   return(table1(
-    ~ sex + age + bl_vo2_max + percent_complete_of_36_wkts | Group,
+    ~ sex + age + bl_vo2_max + race+ ethnicity+ percent_complete_of_36_wkts | Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
     caption = paste0(
@@ -602,7 +602,11 @@ demog %>%
   make_table()
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125) %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125 ) %>% 
+  make_table()
+
+demog %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized") | record_id > 1000) %>% 
   make_table()
 
 df<-demog %>% 
