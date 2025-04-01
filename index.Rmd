@@ -90,6 +90,7 @@ demog$strata[demog$sex == "Female" & demog$agegroup == "18-35 yrs"]<-"F, 18-35"
 demog$strata[demog$sex == "Female" & demog$agegroup == "36-65 yrs"]<-"F, 36-65"
 demog$strata[demog$sex == "Male" & demog$agegroup == "18-35 yrs"]<-"M, 18-35"
 demog$strata[demog$sex == "Male" & demog$agegroup == "36-65 yrs"]<-"M, 36-65"
+
 ```
 
 ## Where are participants this week? 
