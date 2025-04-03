@@ -154,9 +154,9 @@ active_num <- length(unique(counts$record_id))
 demog %>%
    filter(!record_id %in% c(114, 121)) %>% 
    filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE) %>%
-  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EXTEND, EP_surveys) %>% 
+  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, mean_rpe, sd_rpe, name_of_participant_buddy, HR_zone, EXTEND, EP_surveys) %>% 
   arrange(current_week, record_id)  %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EXTEND", "EP_surveys"), align="c", escape=FALSE, caption=paste0("Active Participants: n=", sep="", active_num)) %>%
+  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "RPE (mean)", "RPE (sd)", "Buddy", "HR Target", "EXTEND", "EP_surveys"), align="c", escape=FALSE, caption=paste0("Active Participants: n=", sep="", active_num)) %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
@@ -221,6 +221,13 @@ demog %>%
 
 ```
 
+
+### RPE check
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+knitr::include_graphics("/Users/aubreykr/Desktop/rpe.png")
+```
+
+
 ### Crossover Participant Tracking
 
 ```{r crossovers, message=FALSE, warning=FALSE, echo=FALSE}
@@ -249,8 +256,9 @@ demog %>%
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
   ggtitle(paste0("Crossover Participants")) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
   ylim(c(0,3)) +facet_wrap(~strata)
-
 ```
+
+
 
 ```{r workouts,message=FALSE, warning=FALSE, echo=FALSE}
 ### Completed MICT participants
@@ -712,10 +720,6 @@ demog %>%
 
 ## Age of Cohort
 ```{r codehere,message=FALSE, warning=FALSE, echo=FALSE}
-
-demog %>% 
-  filter(enrollment_status %in% c("Enrolled (not screened yet)")) %>% 
-  ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("New Participants")
 
 demog %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
