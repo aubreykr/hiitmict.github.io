@@ -129,7 +129,6 @@ demog %>%
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
   ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Sex") + theme(plot.title = element_text(hjust = 0.5)) +
   scale_y_continuous(breaks = seq(0, 30, 2))
-
 ```
 
 -   **Things to keep track of:**
@@ -610,16 +609,17 @@ demog %>%
   make_table()
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125 ) %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125 & record_id !="138" ) %>% 
   make_table()
 
 demog %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized") | record_id > 1000) %>% 
   make_table()
 
-df<-demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)"))
-df$record_id
+demog %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") & record_id !=1125 & record_id !="138") %>% 
+  make_table()
+
 
 # Randomized Participants
 randomized_exclude_crossover %>% 
