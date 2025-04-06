@@ -465,7 +465,7 @@ ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog
 # PLOT CONSENTING
 demog$date_consent<-as.yearmon(demog$date_consent)
 demog$date_consent <- as.factor(demog$date_consent)
-demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
+demog$date_consent<-factor(demog$date_consent, levels=c("Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025"))
 
 consent<-demog %>% 
   filter(is.na(date_consent)==FALSE)
@@ -494,12 +494,12 @@ projected <- demog  %>%
 projected$start_month<-as.factor(projected$start_month)
 projected$end_month<-as.factor(projected$end_month)
 
-projected$start_month<-factor(projected$start_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
+projected$start_month<-factor(projected$start_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025",  "Jun 2025", "Jul 2025", "Aug 2025"))
 
-projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
+projected$end_month<-factor(projected$end_month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025",  "Jun 2025", "Jul 2025", "Aug 2025"))
 
-projected$start_month[is.na(projected$start_month)]<-"Jan 2025"
-projected$end_month[is.na(projected$end_month)]<-"April 2025"
+projected$start_month[is.na(projected$start_month)]<-"Apr 2025"
+projected$end_month[is.na(projected$end_month)]<-"Jul 2025"
 ```
 
 ```{r plotprojected, echo=FALSE,  message=FALSE, warning=FALSE}
@@ -513,14 +513,14 @@ counts_start<-projected %>%
   group_by(start_month) %>% 
   count()
 counts_start<-counts_start %>% 
-  filter(!start_month %in% c("Apr 2023", "Jan 2025"))
+  filter(!start_month %in% c("Apr 2023", "Apr 2025"))
 avg_start <- round(mean(counts_start$n),2)
 
 counts_end<-projected %>% 
   group_by(end_month) %>% 
   count()
 counts_end<-counts_end %>% 
-  filter(!end_month %in% c("Aug 2023", "Apr 2025"))
+  filter(!end_month %in% c("Aug 2023", "Jul 2025"))
 avg_end <- round(mean(counts_end$n),2)
 
 
@@ -539,7 +539,7 @@ num_projected <- length(unique(projected$record_id))
 # Gather and color by timepoint
 projected <- gather(projected, key = "Timepoint", value = "Month", c("start_month", "end_month"))
 projected$Timepoint <- factor(projected$Timepoint, levels=c("start_month", "end_month"))
-projected$Month<-factor(projected$Month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "April 2025", "May 2025"))
+projected$Month<-factor(projected$Month, levels=c("Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025",  "Jun 2025", "Jul 2025", "Aug 2025"))
 
 ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() + theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
