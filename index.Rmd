@@ -590,7 +590,7 @@ make_table <- function(data){
 
   # Generate Table 1
   return(table1(
-    ~ age + bl_vo2_max + race+ ethnicity+ percent_complete_of_36_wkts | sex+Group,
+    ~ sex+ age + bl_vo2_max + race+ ethnicity+ percent_complete_of_36_wkts |Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
     caption = paste0(
