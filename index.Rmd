@@ -590,7 +590,7 @@ make_table <- function(data){
 
   # Generate Table 1
   return(table1(
-    ~ sex+ age + bl_vo2_max + race+ ethnicity+ percent_complete_of_36_wkts |Group,
+    ~ sex+ age + bl_vo2_max + race+ ethnicity |Group,
     render.continuous = my.render.cont,
     render.missing = NULL,
     caption = paste0(
@@ -609,7 +609,7 @@ demog %>%
   make_table()
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125 & record_id !="138" ) %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized") & record_id !=1125 & record_id !=1139 & record_id !="138" ) %>% 
   make_table()
 
 demog %>% 
@@ -723,7 +723,7 @@ demog %>%
 
 demog %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
-  ggplot(aes(x=sex, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("Age for All Participants (n=94)")
+  ggplot(aes(x=Group, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("Age for All Participants (n=94)")+facet_wrap(~sex)
 
 ```
 
