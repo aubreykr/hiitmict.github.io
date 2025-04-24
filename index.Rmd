@@ -722,7 +722,7 @@ demog %>%
 ```{r codehere,message=FALSE, warning=FALSE, echo=FALSE}
 
 demog %>% 
-  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)")) %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized")) %>% 
   ggplot(aes(x=Group, y=age))+geom_boxplot()+geom_jitter()+theme_bw()+ggtitle("Age for All Participants (n=94)")+facet_wrap(~sex)
 
 ```
