@@ -394,7 +394,6 @@ test<-demog %>%
    filter(is.na(ep_vo2_max)==FALSE | enrollment_status=="On-going Randomized"| record_id > 1000) %>% 
   select(record_id)
 counting<-length(test$record_id)
-counting
   
 demog %>% 
    filter(is.na(ep_vo2_max)==FALSE | enrollment_status=="On-going Randomized"| record_id > 1000) %>% 
@@ -632,6 +631,9 @@ demog %>%
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") & record_id !=1125 & record_id !="138") %>% 
   make_table()
 
+demog %>% 
+   filter(is.na(ep_vo2_max)==FALSE | enrollment_status=="On-going Randomized"| record_id > 1000) %>% 
+  make_table()
 demog %>% 
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") | record_id>1000) %>% 
   make_table()
