@@ -390,6 +390,18 @@ cohort %>%
   ggtitle(paste("Sum of on-going + completed: n=", sep="", length(unique(cohort$record_id)))) + guides(alpha = "none")
 
 
+test<-demog %>% 
+   filter(is.na(ep_vo2_max)==FALSE | enrollment_status=="On-going Randomized"| record_id > 1000) %>% 
+  select(record_id)
+counting<-length(test$record_id)
+counting
+  
+demog %>% 
+   filter(is.na(ep_vo2_max)==FALSE | enrollment_status=="On-going Randomized"| record_id > 1000) %>% 
+  ggplot(aes(x=Group, fill=Group,alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+  ggtitle(paste("Sum of on-going + completed (WITH CROSSOVERS): n=", sep="", length(unique(test$record_id)))) + guides(alpha = "none")
 ```
 
 ### ALL PARTICIPANTS RANDOMIZED
@@ -597,7 +609,7 @@ make_table <- function(data){
       "Table 1. Baseline Demographics of Participants (n=",
       count,
       ")"
-    ),
+    ), overall=FALSE,
     data = data
   ))
 
@@ -620,7 +632,11 @@ demog %>%
   filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") & record_id !=1125 & record_id !="138") %>% 
   make_table()
 
+demog %>% 
+  filter(enrollment_status %in% c("Completed", "On-going Randomized", "Enrolled (not screened yet)") | record_id>1000) %>% 
+  make_table()
 
+demog
 # Randomized Participants
 randomized_exclude_crossover %>% 
   make_table()
