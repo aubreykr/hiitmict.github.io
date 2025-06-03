@@ -69,7 +69,7 @@ demog$EP_VO2[is.na(demog$ep_vo2_max)==TRUE] <- " "
 demog$enrollment_status[is.na(demog$enrollment_status) == TRUE] <- "Enrolled (not screened yet)"
 
 # Specify order of weeks for plots
-demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14"))
+demog$current_week <- factor(demog$current_week, levels=c("Not Training Yet", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12", "Week 13", "Week 14", "Week 15"))
 
 # new column for target HR zone depending on group
 demog<-demog %>% 
