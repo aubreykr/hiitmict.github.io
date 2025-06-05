@@ -595,6 +595,31 @@ make_table <- function(data){
   my.render.cont <- function(x) {
     with(stats.default(x), sprintf("%0.1f (%0.1f)", MEAN, SD))
   }
+  
+pvalue <- function(x, ...) {
+  y <- unlist(x)
+  g <- factor(rep(1:length(x), times=sapply(x, length)))
+
+  if (is.numeric(y)) {
+    # Use ANOVA for >2 group comparison
+    p <- summary(aov(y ~ g))[[1]][["Pr(>F)"]][1]
+  } else {
+    # Categorical variable: chi-squared test
+    p <- chisq.test(table(y, g))$p.value
+  }
+
+  # Format the p-value
+  if (is.na(p)) {
+    return("")
+  } else if (p < 0.001) {
+    return("<0.001**")
+  } else if (p < 0.05) {
+    return("<0.05*")
+  } else {
+    return(sprintf("%.2f", p))
+  }
+}
+
 
   # Count the number of records
   count <- length(data$record_id)
@@ -609,6 +634,7 @@ make_table <- function(data){
       count,
       ")"
     ), overall=FALSE,
+      extra.col=list(`P-value`=pvalue),
     data = data
   ))
 
@@ -792,7 +818,7 @@ demog$bl_muscle <- ifelse(demog$bl_muscle=="Yes", 1, 0)
 demog$ep_muscle <- ifelse(demog$ep_muscle=="Yes", 1, 0)
 demog$bl_adipose <- ifelse(demog$bl_adipose=="Yes", 1, 0)
 demog$ep_adipose <- ifelse(demog$ep_adipose=="Yes", 1, 0)
-demog$Group[demog$record_id==162]<-"HIIT"
+
 
 biop_for_jessi<-demog %>% 
   select(record_id, Group,  bl_muscle, bl_adipose, ep_muscle, ep_adipose) %>% 
