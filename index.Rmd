@@ -160,32 +160,16 @@ demog %>%
 
 demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
 
-# upcoming ppts
-demog %>% 
-  filter(enrollment_status %in% c( "On-going Randomized", "Enrolled (not screened yet)") & current_week =="Not Training Yet" ) %>% 
-  dplyr::select(record_id, current_week, Group, sex, HR_zone, bl_VO2) %>% arrange(desc(bl_VO2)) %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Sex", "HR zone", "BL VO2 done?"), align="c", escape=FALSE, caption="Upcoming ppts") %>%
-  kable_styling() 
-
-
 
 # EP survey check for those complete with EP CPX but not CTRU
 demog %>%
-   filter(enrollment_status == "On-going Randomized" & (EP_VO2 != " " | current_week == "Week 12") & !record_id %in% c(76, 1076, 91, 92, 94, 98, 103, 105, 107, 110, 112, 1091, 117, 119, 123, 115, 116, 124, 126, 127, 128, 1103, 1112))%>%
+   filter(enrollment_status == "On-going Randomized" & (EP_VO2 != " " | current_week == "Week 12" | current_week == "Week 13") & !record_id %in% c(76, 1076, 91, 92, 94, 98, 103, 105, 107, 110, 112, 1091, 117, 119, 123, 115, 116, 124, 126, 127, 128, 1103, 1112))%>%
   dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EP_VO2, EP_surveys) %>% 
   arrange(current_week, record_id)  %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys"), align="c", escape=FALSE, caption=paste0("EP survey check (randomized and EP VO2 done / at Week 12)")) %>%
+  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys"), align="c", escape=FALSE, caption=paste0("EP survey check (EP VO2 done or at Week 12)")) %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 
-
-#Active controls
-# demog %>%
-#   filter(enrollment_status == "On-going Randomized" & Group == "Control" & current_week !="Not Training Yet"  & !record_id %in% c(103, 76, 98, 91) & record_id <= 1000) %>%
-#   dplyr::select(record_id, current_week, Group, name_of_participant_buddy, control_crossover, EP_VO2) %>%
-#   arrange(current_week, name_of_participant_buddy) %>%
-#   kbl(col.names = c("Record ID","Current Week","Group","Buddy", "Crossover?", "EP VO2?"), align="c", escape=FALSE, caption="Active Controls") %>%
-#   kable_styling()
 
 # not marked as completed, but did VO2
 # demog %>%
@@ -217,6 +201,7 @@ demog %>%
 
 #mitras %>%
   #filter(Date.of.Stress.Test.Visit != "" | Date.of.Endpoint.Stress.Test.Visit !="")
+
 
 ```
 
@@ -363,13 +348,6 @@ cohort %>%
   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
   ggtitle(paste0(completed_num, sep=" ", "Completed with Study")) + guides(alpha = "none") + facet_wrap(~Group)
-
-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133 | record_id ==107) %>% 
-  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+theme_bw()+
-  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
-  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste0(completed_num, sep=" ", "Completed with Study")) + guides(alpha = "none")
 
 
 # Progress Toward Filling 4 Strata (M, F, 18-35 yrs, 35-55 yrs)
