@@ -115,19 +115,22 @@ demog %>%
   scale_x_discrete(drop = FALSE) + theme_bw() +
   theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
-  ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Group") + theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle(paste0("Current Participants yet to do VO2 max visit: n=", sep="", current_num)) + labs(fill = "Group") + theme(plot.title = element_text(hjust = 0.5)) +
   scale_y_continuous(breaks = seq(0, 30, 2))
 
+no_ctru<-demog %>%
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_trainingtest_date)==TRUE | enrollment_status=="Enrolled (not screened yet)") 
+current_ctru <- length(unique(no_ctru$record_id))
+
 demog %>%
-  filter(!record_id %in% c(114, 121, 134)) %>% 
-  filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE  | enrollment_status=="Enrolled (not screened yet)") %>% 
-  ggplot(aes(x = current_week, fill=strata, group = factor(record_id))) + geom_bar() +
+  filter(enrollment_status == "On-going Randomized"  & is.na(ep_trainingtest_date)==TRUE | enrollment_status=="Enrolled (not screened yet)") %>% 
+  ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
   geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
   scale_x_discrete(drop = FALSE) + theme_bw() +
   theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
-  xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
-  ggtitle(paste0("Current Participants: n=", sep="", current_num)) + labs(fill = "Sex") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) + labs(fill = "Group") + theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle(paste0("Current Participants yet to do CTRU visit: n=", sep="", current_ctru)) + 
   scale_y_continuous(breaks = seq(0, 30, 2))
 ```
 
@@ -159,14 +162,16 @@ demog %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
+demog$ep_trainingtest_date_done <- ifelse(is.na(demog$ep_trainingtest_date), " ", "YES")
+
 
 
 # EP survey check for those complete with EP CPX but not CTRU
 demog %>%
    filter(enrollment_status == "On-going Randomized" & (EP_VO2 != " " | current_week == "Week 12" | current_week == "Week 13") & !record_id %in% c(76, 1076, 91, 92, 94, 98, 103, 105, 107, 110, 112, 1091, 117, 119, 123, 115, 116, 124, 126, 127, 128, 1103, 1112))%>%
-  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EP_VO2, EP_surveys) %>% 
+  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EP_VO2, EP_surveys, ep_trainingtest_date_done) %>% 
   arrange(current_week, record_id)  %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys"), align="c", escape=FALSE, caption=paste0("EP survey check (EP VO2 done or at Week 12)")) %>%
+  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys", "EP_CTRU?"), align="c", escape=FALSE, caption=paste0("EP survey check (EP VO2 done or at Week 12)")) %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 
@@ -240,6 +245,7 @@ demog %>%
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
   ggtitle(paste0("Crossover Participants")) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
   ylim(c(0,3)) +facet_wrap(~strata)
+
 ```
 
 
