@@ -149,13 +149,13 @@ demog %>%
 
 counts<-demog %>%
    filter(!record_id %in% c(114, 121)) %>% 
-   filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE)
+   filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE | record_id == "1125")
 active_num <- length(unique(counts$record_id))
 
 # Filter for participants who are on-going
 demog %>%
    filter(!record_id %in% c(114, 121)) %>% 
-   filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE) %>%
+   filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE | record_id == "1125") %>%
   dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, mean_rpe, sd_rpe, name_of_participant_buddy, HR_zone, EXTEND, EP_surveys) %>% 
   arrange(current_week, record_id)  %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "RPE (mean)", "RPE (sd)", "Buddy", "HR Target", "EXTEND", "EP_surveys"), align="c", escape=FALSE, caption=paste0("Active Participants: n=", sep="", active_num)) %>%
