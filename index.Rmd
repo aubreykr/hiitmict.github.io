@@ -30,6 +30,7 @@ library(kableExtra)
 library(ggpubr)
 library(stringr)
 library(zoo)
+library(ggrepel)
 ```
 
 ```{r demog, message=FALSE, warning=FALSE, echo=FALSE}
@@ -188,6 +189,57 @@ demog %>%
 demog %>%
   filter(Group != "New Participant" & record_id <1000) %>% 
   ggplot(aes(y = total_workouts_in_REDCap, x=Group, group=Group, color=enrollment_status))+geom_boxplot(outlier.shape = NA)+geom_jitter(width=0.1, alpha=0.8)+theme_bw()+ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")"))+theme(plot.title=element_text(hjust=0.5))+ylab("Total workouts in REDCap logged")
+
+demog %>%
+  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
+  theme_bw() +
+  ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Total workouts in REDCap logged") +
+scale_color_gradient2(
+  name = "Number of quality workouts",
+  low = "red",
+  mid = "yellow",
+  high = "green",
+  midpoint = 20
+)+geom_hline(yintercept = 20, linetype="dashed")+ 
+  # label outliers with < 20 workouts
+   geom_text_repel(
+    data = function(d) d %>% filter(total_workouts_in_REDCap < 20),
+    aes(label = record_id),
+    size = 3.5,
+    label.size = 0.2
+  ) 
+```
+
+```{r adherencecolored, message=FALSE, warning=FALSE, echo=FALSE, fig.height=8, fig.width=12}
+demog %>%
+  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
+  theme_bw() +
+  ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Total workouts in REDCap logged") +
+ scale_color_gradient2(
+  name = "Number of quality workouts",
+  low = "red",
+  mid = "yellow",
+  high = "green",
+  midpoint = 20
+)+ geom_hline(yintercept = 20, linetype="dashed")  +facet_wrap(~enrollment_status)+ # label outliers with < 20 workouts
+   geom_text_repel(
+    data = function(d) d %>% filter(quality_workouts_in_REDCap < 20),
+    aes(label = record_id),
+    size = 4,
+    label.size = 0.2
+  ) 
+
+
 ```
 
 
