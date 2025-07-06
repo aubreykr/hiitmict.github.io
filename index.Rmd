@@ -364,7 +364,10 @@ demog %>%
 #   kbl(col.names = c("Group", "EP CTRU?", "n"), align = "c", caption = "Randomized participants (n=109): completion of EP CTRU test (n=87)") %>%
 #    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
+```
 
+### All visits (count)
+```{r visitcounts, message=FALSE, warning=FALSE, echo=FALSE}
 demog %>%
   filter(Group !="New Participant" & record_id < 1000) %>%
   group_by(Group, enrollment_status, is.na(bl_vo2_max)==FALSE, is.na(bl_trainingtest_date)==FALSE,is.na(ep_vo2_max)==FALSE, is.na(ep_trainingtest_date)==FALSE) %>%
