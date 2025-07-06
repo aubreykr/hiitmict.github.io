@@ -98,7 +98,7 @@ demog$strata[demog$sex == "Male" & demog$agegroup == "36-65 yrs"]<-"M, 36-65"
 
 This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
 
-```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE, fig.width=7, fig.height=7}
+```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE}
 
 #---------Snapshot of participant progress------------
                                                      
@@ -136,11 +136,9 @@ demog %>%
 ```
 
 -   **Things to keep track of:**
-    -   Are green/blue participants on track with workouts?
+    -   Are participants on track with workouts?
     -   Have participants at the end...
         -   completed EP surveys and enough workouts?
-        -   willing to crossover?
-    -   Are new participants willing to do biopsy?
 
 ## Workout Adherence
 
@@ -178,6 +176,13 @@ demog %>%
 ```
 ### Number of workouts
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+# If missing total num workouts (e.g. control or withdrew before training), impute as 0.
+demog<-demog %>% 
+  mutate(total_workouts_in_REDCap = ifelse(is.na(total_workouts_in_REDCap)==TRUE, 0, total_workouts_in_REDCap),
+         quality_workouts_in_REDCap = ifelse(is.na(quality_workouts_in_REDCap)==TRUE, 0, quality_workouts_in_REDCap))
+         
+
 # Workout adherence stats
 rand<-demog %>%
   filter(Group != "New Participant" & record_id <1000)
@@ -189,6 +194,7 @@ demog %>%
 demog %>%
   filter(Group != "New Participant" & record_id <1000) %>% 
   ggplot(aes(y = total_workouts_in_REDCap, x=Group, group=Group, color=enrollment_status))+geom_boxplot(outlier.shape = NA)+geom_jitter(width=0.1, alpha=0.8)+theme_bw()+ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")"))+theme(plot.title=element_text(hjust=0.5))+ylab("Total workouts in REDCap logged")
+
 ```
 
 
@@ -231,7 +237,7 @@ Participant record IDs are labeled below if they completed <20 total workouts (g
 
 demog$EP_VO2 <- ifelse(demog$EP_VO2 == " ", "NO", demog$EP_VO2)
 demog %>%
-  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+  filter(!Group %in% c( "New Participant", "Control") & record_id < 1000) %>% 
   ggplot(aes(y = total_workouts_in_REDCap, x=Group, group=Group, shape=EP_VO2)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
@@ -277,17 +283,155 @@ scale_color_gradient2(
   label.size = 0.2
 )
 
+
+demog %>%
+  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
+  theme_bw() +
+  ggtitle("Flag if randomized, but no EP VO2 max") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Total workouts in REDCap logged") +
+scale_color_gradient2(
+  name = "Number of quality workouts",
+  low = "red",
+  mid = "yellow",
+  high = "green",
+  midpoint = 20
+)+geom_hline(yintercept = 20, linetype="dashed")+ 
+ geom_text_repel(
+  data = function(d) d %>% filter(EP_VO2 == "NO"),
+  aes(label = paste0(record_id, "--", enrollment_status)),
+  size = 2,
+  label.size = 0.2
+)
+
+demog$ep_trainingtest_date_done<-ifelse(demog$ep_trainingtest_date_done==" ", "NO", demog$ep_trainingtest_date_done)
+
+
+demog %>%
+  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
+  theme_bw() +
+  ggtitle("Flag if randomized, but no EP CTRU visit") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Total workouts in REDCap logged") +
+scale_color_gradient2(
+  name = "Number of quality workouts",
+  low = "red",
+  mid = "yellow",
+  high = "green",
+  midpoint = 20
+)+geom_hline(yintercept = 20, linetype="dashed")+ 
+ geom_text_repel(
+  data = function(d) d %>% filter(ep_trainingtest_date_done == "NO"),
+  aes(label = paste0(record_id, "--", enrollment_status)),
+  size = 2,
+  label.size = 0.2
+)
+```
+
+Of the 89 completed participants, only 7 (3 HIIT -- HR too low; 4 MICT -- HR too high) did not adhere to target HR zone in the majority of workouts.
+
+```{r adherencecolored2, message=FALSE, warning=FALSE, echo=FALSE}
+
 demog %>% 
   filter(Group !="Control" & enrollment_status == "Completed") %>% 
   mutate(`20_or_more_wkts` = ifelse(total_workouts_in_REDCap >=20, "yes", "no"),
          `20_or_more_wkts_in_zone` = ifelse(quality_workouts_in_REDCap >=20, "yes", "no")) %>% 
   group_by(Group, `20_or_more_wkts`, `20_or_more_wkts_in_zone`) %>% 
   count() %>% 
-  kbl(align = "c", caption = "Completed Participants: who adhered to HR zone?") %>% 
+  kbl(align = "c", caption = "Completed Participants (n=89): only ~7 participants did not adhere to HR zone") %>% 
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+# demog %>%
+#   filter(Group !="New Participant" & record_id < 1000) %>%
+#   group_by(Group, EP_VO2) %>%
+#   count() %>%
+#   arrange(desc(n)) %>%
+#   kbl(col.names = c("Group", "EP VO2?", "n"), align = "c", caption = "Randomized participants (n=109): completion of EP VO2 test (n=89)") %>%
+#    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+# 
+# demog %>%
+#   filter(Group !="New Participant" & record_id < 1000) %>%
+#   group_by(Group, ep_trainingtest_date_done) %>%
+#   count() %>%
+#   arrange(desc(n)) %>%
+#   kbl(col.names = c("Group", "EP CTRU?", "n"), align = "c", caption = "Randomized participants (n=109): completion of EP CTRU test (n=87)") %>%
+#    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+
+demog %>%
+  filter(Group !="New Participant" & record_id < 1000) %>%
+  group_by(Group, enrollment_status, is.na(bl_vo2_max)==FALSE, is.na(bl_trainingtest_date)==FALSE,is.na(ep_vo2_max)==FALSE, is.na(ep_trainingtest_date)==FALSE) %>%
+  summarize(n= n_distinct(record_id)) %>%
+  arrange(desc(n)) %>%   
+  kbl(col.names = c("Group", "Status", "BL VO2?", "BL CTRU?", "EP VO2?", "EP CTRU?", "n"), align = "c", caption = "Randomized participants (n=109): completion of visits") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+# demog %>%
+#   filter(Group !="New Participant" & record_id > 1000) %>%
+#   group_by(Group, enrollment_status, is.na(ep_vo2_max)==FALSE, is.na(ep_trainingtest_date)==FALSE) %>%
+#   summarize(n= n_distinct(record_id)) %>%
+#   arrange(desc(n)) %>%   
+#   kbl(col.names = c("Group", "Status", "EP VO2?", "EP CTRU?", "n"), align = "c", caption = "Crossover participants (n=8): completion of visits") %>%
+#    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+```
+
+### VO2 max tests (count)
+
+Note: the following tables do not include crossover participants. There were 8 crossover participants and therefore 8 more VO2 max tests (that occurred after the crossover). These are not accounted for here.
+
+```{r vo2count, message=FALSE, warning=FALSE, echo=FALSE}
+
+demog %>%
+  filter(Group !="New Participant" & record_id < 1000) %>%
+  group_by(Group, is.na(bl_vo2_max)==FALSE) %>% 
+  summarize(n= n_distinct(record_id)) %>%
+  arrange(desc(n)) %>%   
+  kbl(col.names = c("Group", "BL VO2?", "n"), align = "c", caption = "Randomized participants (n=109): BL VO2 (n=109).") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+demog %>%
+  filter(Group !="New Participant" & record_id < 1000) %>%
+  group_by(Group, is.na(ep_vo2_max)==FALSE) %>% 
+  summarize(n= n_distinct(record_id)) %>%
+  arrange(desc(n)) %>%   
+  kbl(col.names = c("Group", "EP VO2?", "n"), align = "c", caption = "Randomized participants (n=109): EP VO2 (n=89).") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+```
+
+### Acute Exercise Visit (count)
+```{r acutevisitcount, message=FALSE, warning=FALSE, echo=FALSE}
+
+demog %>%
+  filter(Group !="New Participant" & record_id < 1000) %>%
+  group_by(Group, is.na(bl_trainingtest_date)==FALSE) %>% 
+  summarize(n= n_distinct(record_id)) %>%
+  arrange(desc(n)) %>%   
+  kbl(col.names = c("Group", "BL CTRU?", "n"), align = "c", caption = "Randomized participants (n=109): BL Acute Ex Visit (n=102).") %>%
    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 
+demog %>%
+  filter(Group !="New Participant" & record_id < 1000) %>%
+  group_by(Group, is.na(ep_trainingtest_date)==FALSE) %>% 
+  summarize(n= n_distinct(record_id)) %>%
+  arrange(desc(n)) %>%   
+  kbl(col.names = c("Group", "EP CTRU?", "n"), align = "c", caption = "Randomized participants (n=109): EP Acute Ex Visit (n=87).") %>%
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+  
+
 ```
+
+
+
+
 
 
 ### Crossover Participant Tracking
