@@ -173,17 +173,35 @@ demog %>%
   arrange(current_week, record_id)  %>% 
   kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys", "EP_CTRU?"), align="c", escape=FALSE, caption=paste0("EP survey check (EP VO2 done or at Week 12)")) %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
+```
+### Number of workouts
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+# Workout adherence stats
+rand<-demog %>%
+  filter(Group != "New Participant" & record_id <1000)
+count<-length(rand$record_id)
+demog %>%
+  filter(Group != "New Participant" & record_id <1000) %>% 
+  ggplot(aes(y = quality_workouts_in_REDCap, x=Group, group=Group, color=enrollment_status))+geom_boxplot(outlier.shape = NA)+geom_jitter(width=0.1, alpha=0.8)+theme_bw()+ggtitle(paste0("Quality wkts in REDCap: all randomized participants (n=", count, ")"))+theme(plot.title=element_text(hjust=0.5))+ylab("Quality workouts in REDCap (>50% in target HR zone)")
+
+demog %>%
+  filter(Group != "New Participant" & record_id <1000) %>% 
+  ggplot(aes(y = total_workouts_in_REDCap, x=Group, group=Group, color=enrollment_status))+geom_boxplot(outlier.shape = NA)+geom_jitter(width=0.1, alpha=0.8)+theme_bw()+ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")"))+theme(plot.title=element_text(hjust=0.5))+ylab("Total workouts in REDCap logged")
 ```
 
 
-### RPE check
+### Rate of Perceived Exertion (RPE) 
+
+The following plots show RPE for MICT and HIIT participants across workouts.
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 knitr::include_graphics("/Users/aubreykr/Desktop/rpe.png")
 knitr::include_graphics("/Users/aubreykr/Desktop/rpe2.png")
 ```
 
-### List of all participants (sorted by number quality workouts completed).
+### Workout Leaderboard
 
+Participants are sorted by # quality workouts.
 Quality workouts = majority of workout in target heart rate zone, scored by RAs + Aubrey.
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 
@@ -199,7 +217,7 @@ demog %>%
   dplyr::select(record_id, enrollment_status, Group, total_workouts_in_REDCap, quality_workouts_in_REDCap, mean_rpe, sd_rpe, EP_surveys, EP_VO2, ep_trainingtest_date_done, bl_muscle, bl_adipose, ep_muscle, ep_adipose) %>% 
   arrange(desc(quality_workouts_in_REDCap)) %>% 
   arrange(enrollment_status) %>% 
-  kbl(col.names = c("Record ID","Status","Group","Total Wkts", "Quality Wkts", "RPE (mean)", "RPE (sd)", "EP surveys?", "EP_Vo2?", "EP_CTRU?", "bl_muscle?", "bl_adipose?", "ep_muscle?", "ep_adipose?"), align="c", escape=FALSE, caption=paste0("All randomized participants (sorted by # quality workouts)")) %>%
+  kbl(col.names = c("Record ID","Status","Group","Total Wkts", "Quality Wkts", "RPE (mean)", "RPE (sd)", "EP surveys?", "EP_Vo2?", "EP_CTRU?", "bl_muscle?", "bl_adipose?", "ep_muscle?", "ep_adipose?"), align="c", escape=FALSE, caption=paste0("All randomized participants:")) %>%
   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 ```
