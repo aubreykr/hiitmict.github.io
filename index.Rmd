@@ -229,10 +229,10 @@ Participant record IDs are labeled below if they completed <20 total workouts (g
 
 ```{r adherencecolored, message=FALSE, warning=FALSE, echo=FALSE}
 
-
+demog$EP_VO2 <- ifelse(demog$EP_VO2 == " ", "NO", demog$EP_VO2)
 demog %>%
   filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
-  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+  ggplot(aes(y = total_workouts_in_REDCap, x=Group, group=Group, shape=EP_VO2)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
   theme_bw() +
@@ -251,7 +251,7 @@ scale_color_gradient2(
   aes(label = paste0(record_id, "--", enrollment_status)),
   size = 2,
   label.size = 0.2
-)
+)+labs(shape="Endpoint VO2 complete?")
 
 
 demog %>%
@@ -276,6 +276,16 @@ scale_color_gradient2(
   size = 2,
   label.size = 0.2
 )
+
+demog %>% 
+  filter(Group !="Control" & enrollment_status == "Completed") %>% 
+  mutate(`20_or_more_wkts` = ifelse(total_workouts_in_REDCap >=20, "yes", "no"),
+         `20_or_more_wkts_in_zone` = ifelse(quality_workouts_in_REDCap >=20, "yes", "no")) %>% 
+  group_by(Group, `20_or_more_wkts`, `20_or_more_wkts_in_zone`) %>% 
+  count() %>% 
+  kbl(align = "c", caption = "Completed Participants: who adhered to HR zone?") %>% 
+   kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+
 
 ```
 
