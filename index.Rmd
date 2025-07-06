@@ -225,9 +225,9 @@ demog %>%
 
 ### Flagged participants
 
-Participant record IDs are labeled below if they completed <20 total workouts (graph 1) and/or <20 quality workouts (graph 2). Note, these participants were likely to be lost to follow-up or withdrew from the study meaning they also did not return for endpoint visits.
+Participant record IDs are labeled below if they completed <20 total workouts (graph 1) and/or <20 quality workouts (graph 2). Note, these participants w/ less than 20 workouts total (graph 1) were likely to be lost to follow-up or withdrew from the study meaning they also did not return for endpoint visits.
 
-```{r adherencecolored, message=FALSE, warning=FALSE, echo=FALSE, fig.height=8, fig.width=12}
+```{r adherencecolored, message=FALSE, warning=FALSE, echo=FALSE}
 
 
 demog %>%
@@ -236,7 +236,7 @@ demog %>%
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
   theme_bw() +
-  ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")")) +
+  ggtitle(paste0("Flag if total num workouts < 20")) +
   theme(plot.title = element_text(hjust = 0.5)) +
   ylab("Total workouts in REDCap logged") +
 scale_color_gradient2(
@@ -246,13 +246,13 @@ scale_color_gradient2(
   high = "green",
   midpoint = 20
 )+geom_hline(yintercept = 20, linetype="dashed")+ 
-  # label outliers with < 20 workouts
-   geom_text_repel(
-    data = function(d) d %>% filter(total_workouts_in_REDCap < 20),
-    aes(label = record_id),
-    size = 3.5,
-    label.size = 0.2
-  ) 
+ geom_text_repel(
+  data = function(d) d %>% filter(total_workouts_in_REDCap < 20),
+  aes(label = paste0(record_id, "--", enrollment_status)),
+  size = 2,
+  label.size = 0.2
+)
+
 
 demog %>%
   filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
@@ -260,22 +260,22 @@ demog %>%
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
   theme_bw() +
-  ggtitle(paste0("Total wkts in REDCap: all randomized participants (n=", count, ")")) +
+  ggtitle("Flag if completed study, but num 'quality' workouts < 20") +
   theme(plot.title = element_text(hjust = 0.5)) +
   ylab("Total workouts in REDCap logged") +
- scale_color_gradient2(
+scale_color_gradient2(
   name = "Number of quality workouts",
   low = "red",
   mid = "yellow",
   high = "green",
   midpoint = 20
-)+ geom_hline(yintercept = 20, linetype="dashed")  +facet_wrap(~enrollment_status)+ # label outliers with < 20 workouts
-   geom_text_repel(
-    data = function(d) d %>% filter(quality_workouts_in_REDCap < 20),
-    aes(label = record_id),
-    size = 4,
-    label.size = 0.2
-  ) 
+)+geom_hline(yintercept = 20, linetype="dashed")+ 
+ geom_text_repel(
+  data = function(d) d %>% filter(quality_workouts_in_REDCap < 20 & total_workouts_in_REDCap > 20),
+  aes(label = paste0(record_id, "--", enrollment_status)),
+  size = 2,
+  label.size = 0.2
+)
 
 ```
 
