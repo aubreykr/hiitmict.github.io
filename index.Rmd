@@ -284,67 +284,68 @@ scale_color_gradient2(
 )
 
 
-demog %>%
-  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
-  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
-  geom_boxplot(outlier.shape = NA) +
-  geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
-  theme_bw() +
-  ggtitle("Flag if randomized, but no EP VO2 max") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("Total workouts in REDCap logged") +
-scale_color_gradient2(
-  name = "Number of quality workouts",
-  low = "red",
-  mid = "yellow",
-  high = "green",
-  midpoint = 20
-)+geom_hline(yintercept = 20, linetype="dashed")+ 
- geom_text_repel(
-  data = function(d) d %>% filter(EP_VO2 == "NO"),
-  aes(label = paste0(record_id, "--", enrollment_status)),
-  size = 2,
-  label.size = 0.2
-)
+# demog %>%
+#   filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+#   ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+#   geom_boxplot(outlier.shape = NA) +
+#   geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
+#   theme_bw() +
+#   ggtitle("Flag if randomized, but no EP VO2 max") +
+#   theme(plot.title = element_text(hjust = 0.5)) +
+#   ylab("Total workouts in REDCap logged") +
+# scale_color_gradient2(
+#   name = "Number of quality workouts",
+#   low = "red",
+#   mid = "yellow",
+#   high = "green",
+#   midpoint = 20
+# )+geom_hline(yintercept = 20, linetype="dashed")+ 
+#  geom_text_repel(
+#   data = function(d) d %>% filter(EP_VO2 == "NO"),
+#   aes(label = paste0(record_id, "--", enrollment_status)),
+#   size = 2,
+#   label.size = 0.2
+# )
 
 demog$ep_trainingtest_date_done<-ifelse(demog$ep_trainingtest_date_done==" ", "NO", demog$ep_trainingtest_date_done)
 
 
-demog %>%
-  filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
-  ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
-  geom_boxplot(outlier.shape = NA) +
-  geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
-  theme_bw() +
-  ggtitle("Flag if randomized, but no EP CTRU visit") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  ylab("Total workouts in REDCap logged") +
-scale_color_gradient2(
-  name = "Number of quality workouts",
-  low = "red",
-  mid = "yellow",
-  high = "green",
-  midpoint = 20
-)+geom_hline(yintercept = 20, linetype="dashed")+ 
- geom_text_repel(
-  data = function(d) d %>% filter(ep_trainingtest_date_done == "NO"),
-  aes(label = paste0(record_id, "--", enrollment_status)),
-  size = 2,
-  label.size = 0.2
-)
+# demog %>%
+#   filter(Group != "New Participant" & record_id < 1000 & Group != "Control") %>% 
+#   ggplot(aes(y = total_workouts_in_REDCap, x=Group)) +
+#   geom_boxplot(outlier.shape = NA) +
+#   geom_point(aes(color = quality_workouts_in_REDCap), position = position_jitter(width = 0.15), size = 2) +
+#   theme_bw() +
+#   ggtitle("Flag if randomized, but no EP CTRU visit") +
+#   theme(plot.title = element_text(hjust = 0.5)) +
+#   ylab("Total workouts in REDCap logged") +
+# scale_color_gradient2(
+#   name = "Number of quality workouts",
+#   low = "red",
+#   mid = "yellow",
+#   high = "green",
+#   midpoint = 20
+# )+geom_hline(yintercept = 20, linetype="dashed")+ 
+#  geom_text_repel(
+#   data = function(d) d %>% filter(ep_trainingtest_date_done == "NO"),
+#   aes(label = paste0(record_id, "--", enrollment_status)),
+#   size = 2,
+#   label.size = 0.2
+# )
 ```
 
-Of the 89 completed participants, only 7 (3 HIIT -- HR too low; 4 MICT -- HR too high) did not adhere to target HR zone in the majority of workouts.
+Only 7 participants (3 HIIT -- HR too low; 4 MICT -- HR too high) did not adhere to target HR zone in the majority of workouts.
 
 ```{r adherencecolored2, message=FALSE, warning=FALSE, echo=FALSE}
 
+
 demog %>% 
-  filter(Group !="Control" & enrollment_status == "Completed") %>% 
+  filter(Group !="Control" & enrollment_status == "Completed" & record_id <1000) %>% 
   mutate(`20_or_more_wkts` = ifelse(total_workouts_in_REDCap >=20, "yes", "no"),
          `20_or_more_wkts_in_zone` = ifelse(quality_workouts_in_REDCap >=20, "yes", "no")) %>% 
   group_by(Group, `20_or_more_wkts`, `20_or_more_wkts_in_zone`) %>% 
   count() %>% 
-  kbl(align = "c", caption = "Completed Participants (n=89): only ~7 participants did not adhere to HR zone") %>% 
+  kbl(align = "c", caption = "HIIT or MICT Participants (n=68): only ~7 participants did not adhere to HR zone") %>% 
    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 # demog %>%
