@@ -760,7 +760,7 @@ ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() + theme_bw()+
 
 ```
 
-```{r, echo=FALSE, include=FALSE}
+```{r, echo=FALSE}
 
 make_table <- function(data){
   # Simplify race categories
