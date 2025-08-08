@@ -715,7 +715,7 @@ projected$start_month[is.na(projected$start_month)]<-"Apr 2025"
 projected$end_month[is.na(projected$end_month)]<-"Jul 2025"
 ```
 
-```{r plotprojected, echo=FALSE,  message=FALSE, warning=FALSE}
+```{r plotprojected, echo=FALSE,  include=FALSE, message=FALSE, warning=FALSE}
 
 # Plots
 current_date <- Sys.Date()
@@ -760,7 +760,7 @@ ggplot(aes(x=Month, fill=Timepoint), data=projected) + geom_bar() + theme_bw()+
 
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include=FALSE}
 
 make_table <- function(data){
   # Simplify race categories
