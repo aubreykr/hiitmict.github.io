@@ -15,7 +15,7 @@ output:
     toc_depth: '3'
 ---
 
-This is designed to track study progress! Below is a weekly update.
+This is designed to track study progress!
 
 ```{r setup, include=FALSE}
 # Load packages
@@ -91,88 +91,56 @@ demog$strata[demog$sex == "Female" & demog$agegroup == "18-35 yrs"]<-"F, 18-35"
 demog$strata[demog$sex == "Female" & demog$agegroup == "36-65 yrs"]<-"F, 36-65"
 demog$strata[demog$sex == "Male" & demog$agegroup == "18-35 yrs"]<-"M, 18-35"
 demog$strata[demog$sex == "Male" & demog$agegroup == "36-65 yrs"]<-"M, 36-65"
-```
 
-## Where are participants this week? 
-
-This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
-
-```{r firstcode, message=FALSE, warning=FALSE, echo=FALSE}
-
-#---------Snapshot of participant progress------------
-                                                     
-ongoing<-demog %>% 
-  filter(record_id %in% c(1125, 1139))
-  # filter(enrollment_status == "On-going Randomized"  & is.na(ep_vo2_max)==TRUE | enrollment_status=="Enrolled (not screened yet)")
-current_num<-length(unique(ongoing$record_id))
-
-ongoing %>%
-  ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
-  geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
-            position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
-  scale_x_discrete(drop = FALSE) + theme_bw() +
-  theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
-  xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
-  ggtitle(paste0("Current Participants yet to do VO2 max visit: n=", sep="", current_num)) + labs(fill = "Group") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_y_continuous(breaks = seq(0, 30, 2))
-
-no_ctru<-demog %>%
-  filter(enrollment_status == "On-going Randomized"  & is.na(ep_trainingtest_date)==TRUE | enrollment_status=="Enrolled (not screened yet)") 
-current_ctru <- length(unique(no_ctru$record_id))
-
-demog %>%
-  filter(enrollment_status == "On-going Randomized"  & is.na(ep_trainingtest_date)==TRUE | enrollment_status=="Enrolled (not screened yet)") %>% 
-  ggplot(aes(x = current_week, fill=Group, group = factor(record_id))) + geom_bar() +
-  geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
-            position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
-  scale_x_discrete(drop = FALSE) + theme_bw() +
-  theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
-  xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) + labs(fill = "Group") + theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle(paste0("Current Participants yet to do CTRU visit: n=", sep="", current_ctru)) + 
-  scale_y_continuous(breaks = seq(0, 30, 2))
-
-```
-
--   **Things to keep track of:**
-    -   Are participants on track with workouts?
-    -   Have participants at the end...
-        -   completed EP surveys and enough workouts?
-
-## Workout Adherence
-
-### On-going participants
-
-```{r workouts0, message=FALSE, warning=FALSE, echo=FALSE}
-
-counts<-demog %>%
-   filter(!record_id %in% c(114, 121)) %>% 
-   filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE | record_id == "1125")
-active_num <- length(unique(counts$record_id))
-
-# Filter for participants who are on-going
-demog %>%
-   filter(!record_id %in% c(114, 121)) %>% 
-   filter(enrollment_status == "On-going Randomized"  & current_week !="Not Training Yet" & is.na(ep_vo2_max)==TRUE | record_id == "1125") %>%
-  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, mean_rpe, sd_rpe, name_of_participant_buddy, HR_zone, EXTEND, EP_surveys) %>% 
-  arrange(current_week, record_id)  %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "RPE (mean)", "RPE (sd)", "Buddy", "HR Target", "EXTEND", "EP_surveys"), align="c", escape=FALSE, caption=paste0("Active Participants: n=", sep="", active_num)) %>%
-  kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
-
+# Recode variables
 demog$bl_VO2 <- ifelse(is.na(demog$bl_vo2_max), "No", "Yes")
 demog$ep_trainingtest_date_done <- ifelse(is.na(demog$ep_trainingtest_date), " ", "YES")
 
+```
 
 
-# EP survey check for those complete with EP CPX but not CTRU
-demog %>%
-   filter(enrollment_status == "On-going Randomized" & (EP_VO2 != " " | current_week == "Week 12" | current_week == "Week 13") & !record_id %in% c(76, 1076, 91, 92, 94, 98, 103, 105, 107, 110, 112, 1091, 117, 119, 123, 115, 116, 124, 126, 127, 128, 1103, 1112))%>%
-  dplyr::select(record_id, current_week, Group, total_workouts_in_REDCap, expected_num, quality_fraction, name_of_participant_buddy, HR_zone, EP_VO2, EP_surveys, ep_trainingtest_date_done) %>% 
-  arrange(current_week, record_id)  %>% 
-  kbl(col.names = c("Record ID","Current Week","Group","Total Wkts", "Expected Num", "Quality (%)", "Buddy", "HR Target", "EP_Vo2?", "EP_surveys", "EP_CTRU?"), align="c", escape=FALSE, caption=paste0("EP survey check (EP VO2 done or at Week 12)")) %>%
-  kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
+This was last updated on `r format(Sys.Date(), format="%B %d, %Y")`.
+
+## Study Complete ✅
+
+In total, 90 participants completed the 12-week training intervention and all pre/post-study visits.
+
+```{r newppl, message=FALSE, warning=FALSE, echo=FALSE}
+# Order levels of enrollment status
+demog<-demog %>% 
+  mutate(enrollment_status = ifelse(is.na(ep_vo2_max)==FALSE & record_id<1000, "Completed", ifelse(
+    is.na(ep_vo2_max)==FALSE & record_id>1000, "Completed (crossover)", enrollment_status
+  )))
+
+demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Lost to Follow-Up (before training)", "Screen failed", "Withdrawn (before training)",  "On-going Randomized", "Withdrawn (after training)", "Lost to Follow-Up (after training)", "Completed", "Completed (crossover)"))
+
+
+ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+theme_bw()+
+  ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id))))+ theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
+```
+
+### Number completed for Control, HIIT, MICT:
+
+```{r progressstrata3, message=FALSE, warning=FALSE, echo=FALSE}
+cohort<-demog %>% 
+  filter(is.na(ep_vo2_max)==FALSE | record_id == 133)
+
+completed_num<-cohort %>% 
+  filter(is.na(ep_vo2_max)==FALSE & record_id <= 1000 | record_id == 133)
+
+completed_num<-length(completed_num$record_id)
+
+cohort %>% 
+  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133) %>% 
+  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
+  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
+  ggtitle(paste0(completed_num, sep=" ", "Completed with VO2 max pre/post")) + guides(alpha = "none")+scale_fill_viridis_d(option = "D")
 
 ```
-### Number of workouts
+
+
+## Workout Adherence
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 
 # If missing total num workouts (e.g. control or withdrew before training), impute as 0.
@@ -196,7 +164,7 @@ demog %>%
 ```
 
 
-### Rate of Perceived Exertion (RPE) 
+## Rate of Perceived Exertion (RPE) 
 
 The following plots show RPE for MICT and HIIT participants across workouts.
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
@@ -204,30 +172,8 @@ knitr::include_graphics("/Users/aubreykr/Desktop/rpe.png")
 knitr::include_graphics("/Users/aubreykr/Desktop/rpe2.png")
 ```
 
-### Workout Leaderboard
 
-Participants are sorted by # quality workouts.
-Quality workouts = majority of workout in target heart rate zone, scored by RAs + Aubrey.
-```{r message=FALSE, warning=FALSE, echo=FALSE}
-
-demog$bl_adipose<-ifelse(is.na(demog$bl_adipose)==TRUE, "", demog$bl_adipose)
-demog$bl_muscle<-ifelse(is.na(demog$bl_muscle)==TRUE, "", demog$bl_muscle)
-demog$ep_adipose<-ifelse(is.na(demog$ep_adipose)==TRUE, "", demog$ep_adipose)
-demog$ep_muscle<-ifelse(is.na(demog$ep_muscle)==TRUE, "", demog$ep_muscle)
-
-
-# Filter for participants who are on-going
-demog %>%
-  filter(Group %in% c("HIIT", "MICT", "Control")) %>% 
-  dplyr::select(record_id, enrollment_status, Group, total_workouts_in_REDCap, quality_workouts_in_REDCap, mean_rpe, sd_rpe, EP_surveys, EP_VO2, ep_trainingtest_date_done, bl_muscle, bl_adipose, ep_muscle, ep_adipose) %>% 
-  arrange(desc(quality_workouts_in_REDCap)) %>% 
-  arrange(enrollment_status)%>% 
-  kbl(col.names = c("Record ID","Status","Group", "Total Wkts", "Quality Wkts", "RPE (mean)", "RPE (sd)", "EP surveys?", "EP_Vo2?", "EP_CTRU?", "bl_muscle?", "bl_adipose?", "ep_muscle?", "ep_adipose?"), align="c", escape=FALSE, caption=paste0("All randomized participants:")) %>%
-  kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
-
-```
-
-### Flagged participants
+## Flagged participants
 
 Participant record IDs are labeled below if they completed <20 total workouts (graph 1) and/or <20 quality workouts (graph 2). Note, these participants w/ less than 20 workouts total (graph 1) were likely to be lost to follow-up or withdrew from the study meaning they also did not return for endpoint visits.
 
@@ -364,7 +310,9 @@ demog %>%
 
 ```
 
-### All visits (count)
+
+## Visit Counts
+
 ```{r visitcounts, message=FALSE, warning=FALSE, echo=FALSE}
 demog %>%
   filter(Group !="New Participant" & record_id < 1000) %>%
@@ -436,66 +384,23 @@ demog %>%
 
 
 
-### Crossover Participant Tracking
+## Crossover Participants
 
 ```{r crossovers, message=FALSE, warning=FALSE, echo=FALSE}
 
-demog$crossover_rand_group[demog$crossover_rand_group == "Endurance"]<- "MICT"
-
 demog %>% 
   filter(crossover == "yes") %>% 
-  dplyr::select(record_id,  Group, EP_VO2) %>% 
-  kbl(col.names = c("Record ID","Rand Group", "EP VO2 done?"), align="c", escape=FALSE, caption="Crossover Participants") %>%
-  kable_styling() 
-
-# Create sex + agebin variable
-demog$strata[demog$sex == "Female" & demog$agegroup == "18-34 yrs"]<-"F, 18-34"
-demog$strata[demog$sex == "Female" & demog$agegroup == "35-65 yrs"]<-"F, 35-65"
-demog$strata[demog$sex == "Male" & demog$agegroup == "18-34 yrs"]<-"M, 18-34"
-demog$strata[demog$sex == "Male" & demog$agegroup == "35-65 yrs"]<-"M, 35-65"
-
-demog %>% 
-  filter(crossover == "yes") %>% 
-  ggplot(aes( x=Group, fill=Group, group = factor(record_id))) + geom_bar() +
+  ggplot(aes( x=strata, fill=Group)) + geom_bar(alpha=0.5) +
   geom_text(stat = "count", aes(label = paste0(record_id, sep="\n(", total_workouts_in_REDCap, sep=")"), y = ..count..),
             position = position_stack(vjust = 0.5), color = "black", size = 3, alpha=1) +
   scale_x_discrete(drop = FALSE) + theme_bw() +
   theme(axis.text.x = element_text(angle = 55, vjust = 1, hjust = 1)) +
   xlab(paste0("Plot Last Updated:", sep = " ", Sys.Date())) +
-  ggtitle(paste0("Crossover Participants")) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
-  ylim(c(0,3)) +facet_wrap(~strata)
+  ggtitle(paste0("Crossover Participants by Group (HIIT/MICT) x Strata (M, F; age group)")) + labs(fill = "Record ID") + theme(plot.title = element_text(hjust = 0.5)) +
+  ylim(c(0,3))
 
 ```
 
-
-
-```{r workouts,message=FALSE, warning=FALSE, echo=FALSE}
-### Completed MICT participants
-
-#Filter for participants who are completed and MICT
-# completed_mict<-demog %>%
-#   filter(enrollment_status == "Completed" & Group == "MICT") %>%
-#   dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, number_polar_used, number_fitbit_used, total_workouts_in_REDCap, sex, agegroup, HR_zone)
-# 
-# completed_mict %>%
-#     arrange(as.numeric(record_id)) %>%
-#   kable(col.names = c("Record ID", "Quality Wkts", "Percent Complete of 36 Wkts", "Polar Worn", "Fitbit Worn", "Total Wkts", "Sex", "Age", "HR Target"), align="c") %>%
-#    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
-```
-
-```{r workouts2,message=FALSE, warning=FALSE, echo=FALSE}
-### Completed HIIT participants
-
-# Filter for participants who are completed and HIIT
-# completed_hiit<-demog %>%
-#   filter(enrollment_status == "Completed" & Group == "HIIT") %>%
-#   dplyr::select(record_id, quality_workouts_in_REDCap, percent_complete_of_36_wkts, number_polar_used,number_fitbit_used, total_workouts_in_REDCap, sex, agegroup, HR_zone)
-# 
-# completed_hiit %>%
-#   arrange(as.numeric(record_id)) %>%
-#    kable(col.names = c("Record ID", "Quality Wkts", "Percent Complete of 36 Wkts", "Polar Worn", "Fitbit Worn", "Total Wkts", "Sex", "Age", "HR Target"), align="c") %>%
-#    kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
-```
 
 ```{r workouts3,message=FALSE, warning=FALSE, echo=FALSE}
 ### HIIT vs. MICT
@@ -517,34 +422,8 @@ demog %>%
 
 ```
 
-### NUMBER COMPLETED
 
-```{r progressstrata3, message=FALSE, warning=FALSE, echo=FALSE}
-cohort<-demog %>% 
-  filter(is.na(ep_vo2_max)==FALSE | record_id == 133)
-
-completed_num<-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id <= 1000 | record_id == 133)
-
-completed_num<-length(completed_num$record_id)
-
-cohort %>% 
-  filter(is.na(ep_vo2_max)==FALSE & record_id < 1000 | record_id ==133) %>% 
-  ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
-  theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
-  geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-  ggtitle(paste0(completed_num, sep=" ", "Completed with VO2 max pre/post")) + guides(alpha = "none")
-
-# cohort %>% 
-#   filter(is.na(ep_vo2_max)==FALSE & record_id > 1000) %>% 
-#   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
-#   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
-#   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-#   ggtitle(paste0("Num Crossovers Completed")) + guides(alpha = "none")
-
-
-
-```
+## Participant Counts
 
 ### Progress toward filling 4 strata
 
@@ -635,42 +514,8 @@ randomized_exclude_crossover %>%
 withdraw<-demog %>% 
   filter(Group != "New Participant" & enrollment_status != "On-going Randomized" & enrollment_status != "Completed")
 
-# withdraw %>% 
-#   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+ theme_bw()+
-#   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
-#   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-#   ggtitle(paste0("Withdrew or LTFU")) + guides(alpha = "none") + facet_wrap(~strata)
-
-
-
-# cohort %>% 
-#   filter(is.na(ep_vo2_max)==FALSE & record_id > 1000) %>% 
-#   ggplot(aes(x=Group, fill=Group, alpha=0.8))+geom_bar(stat="count")+
-#   theme(plot.title = element_text(hjust = 0.5))+xlab("Group")+ylab("Number")+scale_fill_discrete(name = "Group")+
-#   geom_text(aes(label=..count..),stat='count',vjust=1.5) + 
-#   ggtitle(paste0("Num Crossovers Completed")) + guides(alpha = "none")
-
 ```
 
-## Study Progress
-
-```{r newppl, message=FALSE, warning=FALSE, echo=FALSE}
-# Order levels of enrollment status
-demog<-demog %>% 
-  mutate(enrollment_status = ifelse(is.na(ep_vo2_max)==FALSE & record_id<1000, "Completed", ifelse(
-    is.na(ep_vo2_max)==FALSE & record_id>1000, "Completed (crossover)", enrollment_status
-  )))
-
-demog$enrollment_status <- factor(demog$enrollment_status, levels = c("Enrolled (not screened yet)", "Lost to Follow-Up (before training)", "Screen failed", "Withdrawn (before training)",  "On-going Randomized", "Withdrawn (after training)", "Lost to Follow-Up (after training)", "Completed", "Completed (crossover)"))
-
-
-ggplot(aes(x=enrollment_status, fill = enrollment_status, alpha=0.8), data=demog)+geom_bar(stat="count")+theme_bw()+
-  ggtitle(paste("Total Participants: n=", sep="", length(unique(demog$record_id))))+ theme(plot.title = element_text(hjust = 0.5))+xlab("Participant Status")+ylab("Number")+scale_fill_discrete(name = "Group")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+theme(legend.position = "none")+ geom_text(aes(label=..count..),stat='count',vjust=1.5)
-
-#demog %>% 
-  #filter(enrollment_status == "Withdrawn (before training)")
-
-```
 
 ### NUMBER CONSENTED
 
@@ -692,7 +537,7 @@ demog %>%
 
 ```
 
-## Month-by-Month Projections
+## Month-by-Month Enrollment
 
 Note: average counts exclude the first month and Dec 2023 for winter closure which had lower rates.
 
@@ -715,7 +560,7 @@ projected$start_month[is.na(projected$start_month)]<-"Apr 2025"
 projected$end_month[is.na(projected$end_month)]<-"Jul 2025"
 ```
 
-```{r plotprojected, echo=FALSE,  include=FALSE, message=FALSE, warning=FALSE}
+```{r plotprojected, echo=FALSE, message=FALSE, warning=FALSE}
 
 # Plots
 current_date <- Sys.Date()
@@ -1056,44 +901,46 @@ adipose_df<-adipose_df %>%
 # Plots
 muscle_df %>% 
   filter(Completed == 1) %>% 
-  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))
+  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+scale_fill_brewer(palette = "Dark1")
 
 muscle_df %>% 
   filter(Completed == 1) %>% 
-  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+facet_wrap(~sex)
+  ggplot(aes(x=Timepoint, fill=Group)) + geom_bar() +theme_bw() + theme(plot.title=element_text(hjust=0.5)) + ggtitle("Muscle biopsies completed") + geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+facet_wrap(~sex)+scale_fill_brewer(palette = "Dark1")
 
 adipose_df %>% 
   filter(Completed == 1) %>% 
-  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))
+  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+scale_fill_brewer(palette = "Dark1")
 adipose_df %>% 
   filter(Completed == 1) %>% 
-  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+facet_wrap(~sex)
+  ggplot(aes(x=Timepoint, fill=Group, group=Group)) + geom_bar()+theme_bw()+  theme(plot.title=element_text(hjust=0.5)) + ggtitle("Adipose biopsies completed")+ geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) + ylim(c(0,20))+facet_wrap(~sex)+scale_fill_brewer(palette = "Dark1")
 
 ```
 
-```{r demographics, inlude=FALSE, echo=FALSE, message=FALSE}
 
 
-# withdraw %>% 
-#   group_by(reason_for_withdraw_aft) %>% 
-#   count()
-# 
-# withdraw %>%
-#   group_by(reason_for_withdrawing_aft) %>% 
-#   count()
+## Workout Leaderboard
+
+Participants are sorted by # quality workouts.
+Quality workouts = majority of workout in target heart rate zone, scored by RAs + Aubrey.
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+demog$bl_adipose<-ifelse(is.na(demog$bl_adipose)==TRUE, "", demog$bl_adipose)
+demog$bl_muscle<-ifelse(is.na(demog$bl_muscle)==TRUE, "", demog$bl_muscle)
+demog$ep_adipose<-ifelse(is.na(demog$ep_adipose)==TRUE, "", demog$ep_adipose)
+demog$ep_muscle<-ifelse(is.na(demog$ep_muscle)==TRUE, "", demog$ep_muscle)
 
 
-
-# withdraw %>% 
-#   group_by(enrollment_status) %>% 
-#   count()
-# 
-# withdraw %>% 
-#   group_by
-
-
+# Filter for participants who are on-going
+demog %>%
+  filter(Group %in% c("HIIT", "MICT", "Control")) %>% 
+  arrange(enrollment_status) %>% 
+  dplyr::select(record_id, enrollment_status, Group, total_workouts_in_REDCap, quality_workouts_in_REDCap, mean_rpe, sd_rpe, EP_surveys, EP_VO2, ep_trainingtest_date_done, bl_muscle, bl_adipose, ep_muscle, ep_adipose) %>% 
+  arrange(desc(quality_workouts_in_REDCap), enrollment_status) %>% 
+  kbl(col.names = c("Record ID","Status","Group", "Total Wkts", "Quality Wkts", "RPE (mean)", "RPE (sd)", "EP surveys?", "EP_Vo2?", "EP_CTRU?", "bl_muscle?", "bl_adipose?", "ep_muscle?", "ep_adipose?"), align="c", escape=FALSE, caption=paste0("All randomized participants:")) %>%
+  kable_styling(full_width = F, position = "center", font_size = 14, latex_options = "striped", bootstrap_options = c("striped", "hover"))
 
 ```
+
 
 ```{r wearables, message=FALSE, warning=FALSE, echo=FALSE}
 ## Workout Tracking: Wearables vs. REDCap
@@ -1280,280 +1127,7 @@ adipose_df %>%
 
 ```
 
-```{r dxa,  echo=FALSE, include=FALSE}
 
-#dxa <- read_xlsx("/Users/aubreykr/Desktop/dxa_feb2.xlsx")
-
-#completed <- demog %>% 
-# filter(enrollment_status == "Completed") %>% 
-#  select(record_id, Group)
-
-# my.render.cont <- function(x) {
-#     with(stats.default(x), 
-#         sprintf("%0.2f (%0.1f)", MEAN, SD))
-# }
-# 
-# label(completed$Group) <- "Randomization Group"
-# label(completed$sex)  <- "Sex"
-# label(completed$agegroup)  <- "Age Group"
-# label(completed$race) <- "Race"
-# label(completed$bl_vo2_max) <- "VO2 max"
-# label(completed$bl_bmi) <- "BMI "
-# label(completed$bl_percent_body_fat) <- "Body Fat"
-# 
-# units(completed$bl_vo2_max)       <- "mL/kg/min"
-# units(completed$bl_bmi) <- "kg/m2"
-# units(completed$bl_percent_body_fat) <- "%"
-# 
-# table1(~Group + sex + agegroup + bl_vo2_max +  bl_bmi + bl_percent_body_fat,  data=completed, render.continuous=my.render.cont, caption="Table 1. Baseline Demographics")
-# 
-
-# Convert DXA to record ids we can merge
-# dxa$study_id <- str_sub(dxa$study_id, -2)
-# dxa$study_id <- as.numeric(dxa$study_id)
-# dxa<-dxa %>% 
-#   rename(record_id = study_id)
-# 
-# # merge dataframes
-# dxa<-dxa %>% 
-#   select(record_id, timepoint, contains(c("strength", "endur", "VFAT", "TRUNK", "MUSCLE")))
-# dxa<-left_join(completed, dxa, by="record_id")
-# # convert to kg
-# dxa[, 12:26] <- dxa[, 12:26] / 1000
-# 
-# 
-# # Exploratory plots
-# for (col_name in colnames(dxa)[4:26]) {
-#   plot_data <- data.frame(value = dxa[[col_name]], timepoint = as.factor(dxa$timepoint), color=dxa$Group)
-#   print(ggplot(plot_data, aes(x = timepoint, y = value)) + facet_wrap(~color)+
-#     geom_boxplot() + geom_point() +
-#     stat_summary(fun = "median", geom = "text", aes(label = round(..y.., 1)), vjust = -0.5, color = "red")+
-#     ggtitle(col_name) + theme_bw() + theme(plot.title = element_text(hjust=0.5)))
-# }
-#   #stat_compare_means(comparisons = list(c("1", "2")), method = "t.test",label = "p.format", paired = TRUE)+
-# 
-#  my.render.cont <- function(x) {
-#     with(stats.default(x), 
-#          sprintf("%0.2f (%0.1f)", MEAN, SD))
-# }
-# table1(~.| Group+timepoint, overall=F,  render.continuous=my.render.cont, data=dxa)
-# 
-# colnames(demog)
-# 
-# extra <- demog %>% 
-#   select(record_id, sex, agegroup, bl_vo2_max, ep_vo2_max, bl_percent_body_fat, ep_percent_body_fat, bl_bmi, ep_bmi, percent_complete_of_36_wkts, total_workouts_in_REDCap)
-# 
-# dxa2<-merge(dxa, extra, by="record_id")
-# 
-# table1(~. | Group + timepoint, overall=F, render.continuous=my.render.cont, data=dxa2)
-```
-
-```{r vo2checking, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
-## Workout adherence and VO2 max
-
-# #vo2<-read_xlsx("/Users/aubreykr/Desktop/VO2_prelim_analysis/Yair_condensed_VO2_1_6_24.xlsx")
-# 
-# # remove missing rows
-# #vo2<-vo2 %>% 
-#   #filter(is.na(record_id)==FALSE)
-# 
-# # change to baseline, endpoint labels
-# vo2<-vo2 %>% 
-#   mutate(Timepoint = case_when(Timepoint == "V1" ~ "Baseline",
-#                                Timepoint == "V2" ~ "Endpoint"))
-# 
-# # rearrange timepoint to front of column
-# vo2<-vo2 %>%
-#   relocate(Timepoint, .after=record_id) %>% 
-#   arrange(record_id, Timepoint)
-# 
-# # Calculated variables for VO2, VT1, VT2 
-# 
-# # % change in VO2 max
-# for (i in 1:nrow(vo2)) {
-#   if( i %% 2 == 1) { vo2$Peak_VO2_change[i] = 0 }
-#   if (i %% 2 == 0) {  vo2$Peak_VO2_change[i] = (vo2$VO2_Peak_mLkg[i] - vo2$VO2_Peak_mLkg[i-1]) /  vo2$VO2_Peak_mLkg[i-1] * 100}
-# } 
-# 
-# 
-# # VT1
-# for (i in 1:nrow(vo2)) {
-#   if( i %% 2 == 1) { vo2$VT1_change[i] = 0 }
-#   if (i %% 2 == 0) { vo2$VT1_change[i] = vo2$VT1_vo2[i] - vo2$VT1_vo2[i-1]}
-# } 
-# 
-# # VT2
-# for (i in 1:nrow(vo2)) {
-#   if( i %% 2 == 1) { vo2$VT2_change[i] = 0 }
-#   if (i %% 2 == 0) { vo2$VT2_change[i] = vo2$VT2_vo2[i] - vo2$VT2_vo2[i-1]}
-# } 
-# 
-# # HR 
-# for (i in 1:nrow(vo2)) {
-#   if( i %% 2 == 1) { vo2$Peak_HR_change[i] = 0 }
-#   if (i %% 2 == 0) { vo2$Peak_HR_change[i] = vo2$Peak_HR[i] - vo2$Peak_HR[i-1]}
-# } 
-# 
-# # HR at VT1
-# for (i in 1:nrow(vo2)) {
-#   if( i %% 2 == 1) { vo2$VT1_HR_change[i] = 0 }
-#   if (i %% 2 == 0) { vo2$VT1_HR_change[i] = vo2$VT1_HR[i] - vo2$VT1_HR[i-1]}
-# } 
-# 
-# # HR at VT2
-# for (i in 1:nrow(vo2)) {
-#   if( i %% 2 == 1) { vo2$VT2_HR_change[i] = 0 }
-#   if (i %% 2 == 0) { vo2$VT2_HR_change[i] = vo2$VT2_HR[i] - vo2$VT2_HR[i-1]}
-# } 
-# 
-# # plot VO2 max at BL vs. EP
-# #ggplot(aes(x=Timepoint, y=VO2_Peak_mLkg, color=factor(record_id), group=record_id), data=vo2) + geom_point() +
-#  # geom_line(aes(group = record_id), linetype = "dashed") +
-#  # labs(title = "VO2 Peak: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) + theme(plot.title=element_text(hjust=0.5))
-# 
-# # length from first to last vo2 test
-# length<-vo2[vo2$Timepoint == "Endpoint",]$date - vo2[vo2$Timepoint == "Baseline",]$date
-# record_id<-unique(vo2$record_id)
-# dates<-data.frame(cbind(record_id, length))
-# vo2<-merge(vo2, dates)
-# 
-# # change to length in weeks not days
-# vo2$length_weeks<-vo2$length / 7
-# 
-# # plot % change in VO2 max
-# vo2 %>% 
-#   filter(Timepoint=="Endpoint") %>% 
-#   ggplot(aes(x=group, y=Peak_VO2_change)) + geom_boxplot() + geom_hline(yintercept=0, linetype="dotted") + geom_point() + 
-#    stat_summary(
-#     fun = median,
-#     geom = "text",
-#     vjust = -0.6,
-#     size = 3.2,
-#     aes(group = group, label = sprintf("%.2f", ..y..))
-#   ) + ylab("Percent change in VO2 max") + xlab("Randomization Group") + ggtitle("Percent change in VO2 max after 12 Weeks") + theme(plot.title=element_text(hjust=0.5))
-# 
-# # add adherence data and dxa data to vo2 dataset
-# subset<-demog %>% 
-#   filter(enrollment_status == "Completed") %>% 
-#   dplyr::select(record_id, sex, agegroup, total_workouts_in_REDCap, quality_workouts_in_REDCap, percent_complete_of_36_wkts)
-# 
-# vo2<-merge(vo2, subset, by="record_id")
-# 
-# # plot correlation between workout adherence and change in VO2
-# 
-# library(ggpubr)
-# 
-# vo2 %>% 
-#   filter(Timepoint=="Endpoint" & group!="Con" & record_id!="4") %>% 
-#   ggplot(aes(x=quality_workouts_in_REDCap, y=Peak_VO2_change, color=group)) + geom_point() + 
-#     geom_smooth(method = "lm", se = FALSE, size=0.5) +  # Add linear regression line without confidence interval
-#   labs(title = "Number Successful Workouts vs. % Change in VO2 max",
-#        x = "Number Successful Workouts",
-#        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)+
-#   stat_cor(method = "pearson")
-# 
-# vo2 %>% 
-#   filter(Timepoint=="Endpoint" & group!="Con") %>% 
-#   ggplot(aes(x=total_workouts_in_REDCap, y=Peak_VO2_change, color=group)) + geom_point() + 
-#   labs(title = "Number Total Workouts vs. % Change in VO2 max",
-#        x = "Number Total Workouts",
-#        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)
-# 
-# 
-# # look at intervention length
-# 
-# vo2 %>% 
-#   filter(Timepoint == "Endpoint" & group!="Con") %>% 
-#   ggplot(aes(x=length_weeks, y=Peak_VO2_change, group=group, color=group)) + geom_point() +  geom_smooth(method = "lm", se = FALSE, size=0.5) + labs(title = "Number weeks between VO2 max visits vs. % Change in VO2 max",
-#        x = "Number weeks between VO2 max visits",
-#        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8)+
-#    stat_cor(method = "pearson")
-# 
-# vo2 %>% 
-#   filter(Timepoint == "Endpoint" & group!="Con") %>% 
-#   ggplot(aes(x=length_weeks, y=quality_workouts_in_REDCap, group=group, color=group)) + geom_point() +  geom_smooth(method = "lm", se = FALSE, size=0.5) + labs(title = "Number weeks between VO2 max visits vs. num quality workouts",
-#        x = "Number weeks between VO2 max visits",
-#        y = "Number quality workouts in redcap") + theme(plot.title=element_text(hjust=0.5)) +
-#    stat_cor(method = "pearson")
-# 
-# vo2<-vo2 %>% 
-#   mutate(wkts_per_week = quality_workouts_in_REDCap / length_weeks)
-# 
-# # average number of workouts per week
-# vo2 %>% 
-#   filter(Timepoint == "Endpoint" & group!="Con" & record_id!="4") %>% 
-#   ggplot(aes(x=wkts_per_week, y=Peak_VO2_change, group=group, color=group)) + geom_point() +  geom_smooth(method = "lm", se = FALSE, size=0.5) + labs(title = "Average num workouts per week vs. VO2 change",
-#        x = "Average num workouts per week",
-#        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) +
-#    stat_cor(method = "pearson") + geom_hline(yintercept=0, linetype="dotted", size=0.8)
-# 
-# 
-# #model<-lm(percent_change_vo2 ~ sex + agegroup + weight_kg + quality_workouts_in_REDCap + length_weeks + group, data = test)
-# #summary(model)
-# 
-# 
-# vo2 %>% 
-#   filter(Timepoint == "Endpoint" & group!="Con") %>% 
-#   ggplot(aes(x=quality_workouts_in_REDCap, y=Peak_VO2_change, color=group)) + geom_point() + 
-#   labs(title = "Changes by Sex, Age",
-#        x = "Number Successful Workouts",
-#        y = "Percent Change in VO2") + theme(plot.title=element_text(hjust=0.5)) + geom_hline(yintercept=0, linetype="dotted", size=0.8) + facet_wrap(~sex + agegroup)
-# 
-# 
-# ```
-# 
-# ```{r vt1, message=FALSE, warning=FALSE, echo=FALSE}
-# 
-# ggplot(aes(x=Timepoint, y=VO2_Peak_mLkg), data=vo2) + geom_boxplot() + geom_point()+
-#  labs(title = "VO2: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
-#   theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
-#   method = "t.test", # You can also use "wilcox.test" for non-parametric test
-#   label = "p.format",
-#   paired = TRUE
-# )
-# 
-# ggplot(aes(x=Timepoint, y=VT1_vo2), data=vo2) + geom_boxplot() + geom_point()+
-#  labs(title = "VT1: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
-#   theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
-#   method = "t.test", # You can also use "wilcox.test" for non-parametric test
-#   label = "p.format",
-#   paired = TRUE
-# )
-# 
-# ggplot(aes(x=Timepoint, y=VT2_vo2), data=vo2) + geom_boxplot() + geom_point()+
-#  labs(title = "VT2: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
-#   theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
-#   method = "t.test", # You can also use "wilcox.test" for non-parametric test
-#   label = "p.format",
-#   paired = TRUE
-# )
-# 
-# 
-# ggplot(aes(x=Timepoint, y=Peak_HR), data=vo2) + geom_boxplot() + geom_point()+
-#  labs(title = "VO2 HR: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
-#   theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
-#   method = "t.test", # You can also use "wilcox.test" for non-parametric test
-#   label = "p.format",
-#   paired = TRUE
-# )
-# 
-# ggplot(aes(x=Timepoint, y=VT1_HR), data=vo2) + geom_boxplot() + geom_point()+
-#  labs(title = "VT1 HR: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
-#   theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
-#   method = "t.test", # You can also use "wilcox.test" for non-parametric test
-#   label = "p.format",
-#   paired = TRUE
-# )
-# 
-# ggplot(aes(x=Timepoint, y=VT2_HR), data=vo2) + geom_boxplot() + geom_point()+
-#  labs(title = "VT2 HR: Baseline vs. Endpoint", x = "Timepoint", y = "VO2 Peak (mL/kg)") + facet_wrap(~group) +
-#   theme(plot.title=element_text(hjust=0.5)) + stat_compare_means(
-#   method = "t.test", # You can also use "wilcox.test" for non-parametric test
-#   label = "p.format",
-#   paired = TRUE
-# )
-
-```
 
 ```{r scoringefficacy, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
 
